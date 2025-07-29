@@ -7,61 +7,26 @@ servers:
   - url: https://aiactionsnodejs.onrender.com
 
 paths:
-  /contact/{id}:
-    get:
-      operationId: getContactById
-      summary: Get contact details by Salesforce ID using Apex REST
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        "200":
-          description: Contact info retrieved
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ContactResponse"
-        "500":
-          description: Server error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-
   /custom-contact:
     get:
       operationId: getCustomContact
-      summary: Get contact details using either ID or email via Apex REST
-      description: Accepts either a Salesforce Contact ID or a contact email to retrieve a contact record.
+      summary: Get contact details using email via Apex REST
       parameters:
-        - name: id
-          in: query
-          required: false
-          schema:
-            type: string
-          description: Salesforce Contact ID (e.g., 003XXXXXX)
         - name: email
           in: query
-          required: false
+          required: true
           schema:
             type: string
-          description: Contact email address
-      x-parameter-constraints:
-        oneOf:
-          - required: ["id"]
-          - required: ["email"]
+          description: Contact email address (e.g., user@example.com)
       responses:
         "200":
-          description: Contact found
+          description: Contact retrieved
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ContactResponse"
         "400":
-          description: Missing query parameters
+          description: Missing or invalid query parameter
           content:
             application/json:
               schema:

@@ -28,11 +28,11 @@ async function connectToSalesforce() {
   return conn;
 }
 
-// 📱 Call Apex REST API by ID
-async function callContactAPI(id) {
+// 📱 Call Apex REST API by Email
+async function callContactByEmail(email) {
   const conn = await connectToSalesforce();
 
-  const url = `${conn.instanceUrl}/services/apexrest/ContactAPI/${id}`;
+  const url = `${conn.instanceUrl}/services/apexrest/ContactAPI?email=${encodeURIComponent(email)}`;
   const headers = {
     Authorization: `Bearer ${conn.accessToken}`,
     "Content-Type": "application/json"
@@ -44,8 +44,8 @@ async function callContactAPI(id) {
 
 // 🧠 MCP Methods (using Apex API)
 const mcpMethods = {
-  getContactById: async ({ id }) => {
-    const contact = await callContactAPI(id);
+  getContactByEmail: async ({ email }) => {
+    const contact = await callContactByEmail(email);
     return {
       Id: contact.Id,
       Name: contact.Name,
@@ -80,31 +80,16 @@ app.post(MCP_ENDPOINT, async (req, res) => {
   }
 });
 
-// 🌐 REST Endpoint: GET /contact/:id
-app.get("/contact/:id", async (req, res) => {
-  try {
-    const contact = await callContactAPI(req.params.id);
-    res.json({
-      Id: contact.Id,
-      Name: contact.Name,
-      Email: contact.Email,
-      Message: "Contact retrieved using Apex REST"
-    });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// 🌐 Custom REST Endpoint: /custom-contact?id=
+// 🌐 Custom REST Endpoint: /custom-contact?email=
 app.get("/custom-contact", async (req, res) => {
-  const { id } = req.query;
+  const { email } = req.query;
 
-  if (!id) {
-    return res.status(400).json({ error: "Provide 'id' query param." });
+  if (!email) {
+    return res.status(400).json({ error: "Provide 'email' query param." });
   }
 
   try {
-    const contact = await callContactAPI(id);
+    const contact = await callContactByEmail(email);
     res.json({
       Id: contact.Id,
       Name: contact.Name,
