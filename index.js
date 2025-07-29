@@ -28,7 +28,7 @@ async function connectToSalesforce() {
   return conn;
 }
 
-// 📡 Call Apex REST API
+// 📱 Call Apex REST API by ID
 async function callContactAPI(id) {
   const conn = await connectToSalesforce();
 
@@ -42,7 +42,7 @@ async function callContactAPI(id) {
   return response.data;
 }
 
-// 🧠 MCP Methods (now using Apex API)
+// 🧠 MCP Methods (using Apex API)
 const mcpMethods = {
   getContactById: async ({ id }) => {
     const contact = await callContactAPI(id);
@@ -80,7 +80,7 @@ app.post(MCP_ENDPOINT, async (req, res) => {
   }
 });
 
-// 🌐 REST Endpoint: GET /contact/:id (uses Apex too)
+// 🌐 REST Endpoint: GET /contact/:id
 app.get("/contact/:id", async (req, res) => {
   try {
     const contact = await callContactAPI(req.params.id);
