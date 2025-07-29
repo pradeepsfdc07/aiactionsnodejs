@@ -21,6 +21,7 @@ const mcpMethods = {
       Email: "john@example.com"
     };
   }
+  
 };
 
 // ⚙️ MCP Endpoint
