@@ -5,7 +5,11 @@ const axios = require("axios");
 const fs = require("fs");
 const path = require("path");
 const app = express();
+const jsforce = require("jsforce");
 app.use(express.json());
+
+require("dotenv").config();
+
 
 // 🌐 Constants
 const PORT = process.env.PORT || 3000;
@@ -14,14 +18,17 @@ const MCP_ENDPOINT = "/mcp";
 // 🧠 MCP Methods
 const mcpMethods = {
   getContactById: async ({ id }) => {
-    // This is where you'd call Salesforce or mock it for now
+    const conn = await connectToSalesforce();
+
+    const contact = await conn.sobject("Contact").retrieve(id);
+
     return {
-      Id: id,
-      Name: "John Doe",
-      Email: "john@example.com"
+      Id: contact.Id,
+      Name: contact.Name,
+      Email: contact.Email,
+      Message: "Contact retrieved from Salesforce"
     };
   }
-  
 };
 
 // ⚙️ MCP Endpoint
@@ -67,6 +74,21 @@ app.get("/.well-known/ai-plugin.json", (req, res) => {
 app.get("/openapi.yaml", (req, res) => {
   res.sendFile(path.join(__dirname, "openapi.yaml"));
 });
+
+
+
+async function connectToSalesforce() {
+  const conn = new jsforce.Connection({
+    loginUrl: process.env.SF_LOGIN_URL
+  });
+
+  await conn.login(
+    process.env.SF_USERNAME,
+    process.env.SF_PASSWORD + process.env.SF_TOKEN
+  );
+
+  return conn;
+}
 
 // 🚀 Start Server
 app.listen(PORT, () => console.log(`Server running at http://localhost:${PORT}`));
