@@ -1,0 +1,15 @@
+{
+  "schema_version": "v1",
+  "name_for_human": "Salesforce Contact Tool",
+  "name_for_model": "salesforce_contact_tool",
+  "description_for_human": "Look up Salesforce contact by ID",
+  "description_for_model": "Use this tool to fetch contact info by ID from Salesforce",
+  "auth": { "type": "none" },
+  "api": {
+    "type": "openapi",
+    "url": "https://aiactionsnodejs.onrender.com/openapi.yaml"
+  },
+  "logo_url": "https://aiactionsnodejs.onrender.com/logo.png",
+  "contact_email": "you@example.com",
+  "legal_info_url": "https://aiactionsnodejs.onrender.com/legal"
+}

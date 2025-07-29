@@ -1,0 +1,29 @@
+openapi: 3.0.1
+info:
+  title: Salesforce Contact API
+  version: 1.0.0
+paths:
+  /contact/{id}:
+    get:
+      operationId: getContactById
+      summary: Get contact details by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Contact info
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Id:
+                    type: string
+                  Name:
+                    type: string
+                  Email:
+                    type: string
