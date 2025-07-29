@@ -2,6 +2,8 @@ openapi: 3.0.1
 info:
   title: Salesforce Contact API
   version: 1.0.0
+servers:
+  - url: https://your-domain.com  # 🔁 Replace with your actual domain
 paths:
   /contact/{id}:
     get:
