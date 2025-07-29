@@ -1,20 +1,20 @@
-// 📦 Combined MCP + OpenAPI + REST wrapper server
+// 📦 Combined MCP + OpenAPI + Apex REST wrapper server
 
 const express = require("express");
 const axios = require("axios");
 const fs = require("fs");
 const path = require("path");
-const app = express();
 const jsforce = require("jsforce");
-app.use(express.json());
-
 require("dotenv").config();
+
+const app = express();
+app.use(express.json());
 
 // 🌐 Constants
 const PORT = process.env.PORT || 3000;
 const MCP_ENDPOINT = "/mcp";
 
-// 🧠 Salesforce Connection
+// 🔐 Salesforce OAuth Login
 async function connectToSalesforce() {
   const conn = new jsforce.Connection({
     loginUrl: process.env.SF_LOGIN_URL
@@ -28,17 +28,29 @@ async function connectToSalesforce() {
   return conn;
 }
 
-// 🧠 MCP Methods
+// 📡 Call Apex REST API
+async function callContactAPI(id) {
+  const conn = await connectToSalesforce();
+
+  const url = `${conn.instanceUrl}/services/apexrest/ContactAPI/${id}`;
+  const headers = {
+    Authorization: `Bearer ${conn.accessToken}`,
+    "Content-Type": "application/json"
+  };
+
+  const response = await axios.get(url, { headers });
+  return response.data;
+}
+
+// 🧠 MCP Methods (now using Apex API)
 const mcpMethods = {
   getContactById: async ({ id }) => {
-    const conn = await connectToSalesforce();
-    const contact = await conn.sobject("Contact").retrieve(id);
-
+    const contact = await callContactAPI(id);
     return {
       Id: contact.Id,
       Name: contact.Name,
       Email: contact.Email,
-      Message: "Contact retrieved from Salesforce"
+      Message: "Contact retrieved using Apex REST"
     };
   }
 };
@@ -68,43 +80,36 @@ app.post(MCP_ENDPOINT, async (req, res) => {
   }
 });
 
-// 🌐 REST Wrapper for OpenAPI
+// 🌐 REST Endpoint: GET /contact/:id (uses Apex too)
 app.get("/contact/:id", async (req, res) => {
   try {
-    const result = await mcpMethods.getContactById({ id: req.params.id });
-    res.json(result);
+    const contact = await callContactAPI(req.params.id);
+    res.json({
+      Id: contact.Id,
+      Name: contact.Name,
+      Email: contact.Email,
+      Message: "Contact retrieved using Apex REST"
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
 
-// 🌐 Custom REST Endpoint: /custom-contact?id= or ?email=
+// 🌐 Custom REST Endpoint: /custom-contact?id=
 app.get("/custom-contact", async (req, res) => {
-  const { id, email } = req.query;
+  const { id } = req.query;
 
-  if (!id && !email) {
-    return res.status(400).json({ error: "Provide 'id' or 'email' query param." });
+  if (!id) {
+    return res.status(400).json({ error: "Provide 'id' query param." });
   }
 
   try {
-    const conn = await connectToSalesforce();
-    let contact;
-
-    if (id) {
-      contact = await conn.sobject("Contact").retrieve(id);
-    } else if (email) {
-      contact = await conn.sobject("Contact").findOne({ Email: email }, "Id, Name, Email");
-    }
-
-    if (!contact) {
-      return res.status(404).json({ error: "Contact not found" });
-    }
-
+    const contact = await callContactAPI(id);
     res.json({
       Id: contact.Id,
       Name: contact.Name,
       Email: contact.Email,
-      Message: "Contact retrieved using custom endpoint"
+      Message: "Contact retrieved using custom Apex endpoint"
     });
   } catch (error) {
     res.status(500).json({ error: error.message });

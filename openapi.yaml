@@ -2,6 +2,7 @@ openapi: 3.0.1
 info:
   title: Salesforce Contact API
   version: 1.0.0
+
 servers:
   - url: https://aiactionsnodejs.onrender.com
 
@@ -9,7 +10,7 @@ paths:
   /contact/{id}:
     get:
       operationId: getContactById
-      summary: Get contact details by ID
+      summary: Get contact details by Salesforce ID using Apex REST
       parameters:
         - name: id
           in: path
@@ -18,25 +19,22 @@ paths:
             type: string
       responses:
         "200":
-          description: Contact info
+          description: Contact info retrieved
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Id:
-                    type: string
-                  Name:
-                    type: string
-                  Email:
-                    type: string
-                  Message:
-                    type: string
+                $ref: "#/components/schemas/ContactResponse"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 
   /custom-contact:
     get:
       operationId: getCustomContact
-      summary: Get contact by ID or email
+      summary: Get contact details using either ID or email via Apex REST
       parameters:
         - name: id
           in: query
@@ -52,26 +50,46 @@ paths:
           description: Contact email address
       responses:
         "200":
-          description: Contact info
+          description: Contact found
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Id:
-                    type: string
-                  Name:
-                    type: string
-                  Email:
-                    type: string
-                  Message:
-                    type: string
+                $ref: "#/components/schemas/ContactResponse"
+        "400":
+          description: Missing query parameters
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
         "404":
           description: Contact not found
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  error:
-                    type: string
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+components:
+  schemas:
+    ContactResponse:
+      type: object
+      properties:
+        Id:
+          type: string
+        Name:
+          type: string
+        Email:
+          type: string
+        Message:
+          type: string
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
