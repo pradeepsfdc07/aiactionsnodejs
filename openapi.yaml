@@ -35,6 +35,7 @@ paths:
     get:
       operationId: getCustomContact
       summary: Get contact details using either ID or email via Apex REST
+      description: Accepts either a Salesforce Contact ID or a contact email to retrieve a contact record.
       parameters:
         - name: id
           in: query
@@ -48,6 +49,10 @@ paths:
           schema:
             type: string
           description: Contact email address
+      x-parameter-constraints:
+        oneOf:
+          - required: ["id"]
+          - required: ["email"]
       responses:
         "200":
           description: Contact found
