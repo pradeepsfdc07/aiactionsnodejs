@@ -10,16 +10,28 @@ app.use(express.json());
 
 require("dotenv").config();
 
-
 // 🌐 Constants
 const PORT = process.env.PORT || 3000;
 const MCP_ENDPOINT = "/mcp";
+
+// 🧠 Salesforce Connection
+async function connectToSalesforce() {
+  const conn = new jsforce.Connection({
+    loginUrl: process.env.SF_LOGIN_URL
+  });
+
+  await conn.login(
+    process.env.SF_USERNAME,
+    process.env.SF_PASSWORD + process.env.SF_TOKEN
+  );
+
+  return conn;
+}
 
 // 🧠 MCP Methods
 const mcpMethods = {
   getContactById: async ({ id }) => {
     const conn = await connectToSalesforce();
-
     const contact = await conn.sobject("Contact").retrieve(id);
 
     return {
@@ -66,6 +78,39 @@ app.get("/contact/:id", async (req, res) => {
   }
 });
 
+// 🌐 Custom REST Endpoint: /custom-contact?id= or ?email=
+app.get("/custom-contact", async (req, res) => {
+  const { id, email } = req.query;
+
+  if (!id && !email) {
+    return res.status(400).json({ error: "Provide 'id' or 'email' query param." });
+  }
+
+  try {
+    const conn = await connectToSalesforce();
+    let contact;
+
+    if (id) {
+      contact = await conn.sobject("Contact").retrieve(id);
+    } else if (email) {
+      contact = await conn.sobject("Contact").findOne({ Email: email }, "Id, Name, Email");
+    }
+
+    if (!contact) {
+      return res.status(404).json({ error: "Contact not found" });
+    }
+
+    res.json({
+      Id: contact.Id,
+      Name: contact.Name,
+      Email: contact.Email,
+      Message: "Contact retrieved using custom endpoint"
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // 🗂️ Serve OpenAPI and Manifest files
 app.get("/.well-known/ai-plugin.json", (req, res) => {
   res.sendFile(path.join(__dirname, ".well-known/ai-plugin.json"));
@@ -74,21 +119,6 @@ app.get("/.well-known/ai-plugin.json", (req, res) => {
 app.get("/openapi.yaml", (req, res) => {
   res.sendFile(path.join(__dirname, "openapi.yaml"));
 });
-
-
-
-async function connectToSalesforce() {
-  const conn = new jsforce.Connection({
-    loginUrl: process.env.SF_LOGIN_URL
-  });
-
-  await conn.login(
-    process.env.SF_USERNAME,
-    process.env.SF_PASSWORD + process.env.SF_TOKEN
-  );
-
-  return conn;
-}
 
 // 🚀 Start Server
 app.listen(PORT, () => console.log(`Server running at http://localhost:${PORT}`));

@@ -3,7 +3,8 @@ info:
   title: Salesforce Contact API
   version: 1.0.0
 servers:
-  - url: https://aiactionsnodejs.onrender.com  # Replace with your actual hosted domain
+  - url: https://aiactionsnodejs.onrender.com
+
 paths:
   /contact/{id}:
     get:
@@ -30,4 +31,47 @@ paths:
                   Email:
                     type: string
                   Message:
+                    type: string
+
+  /custom-contact:
+    get:
+      operationId: getCustomContact
+      summary: Get contact by ID or email
+      parameters:
+        - name: id
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Salesforce Contact ID (e.g., 003XXXXXX)
+        - name: email
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Contact email address
+      responses:
+        "200":
+          description: Contact info
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Id:
+                    type: string
+                  Name:
+                    type: string
+                  Email:
+                    type: string
+                  Message:
+                    type: string
+        "404":
+          description: Contact not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
                     type: string
