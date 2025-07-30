@@ -51,25 +51,28 @@ async function createContactInSalesforce(contactData) {
   const headers = {
     Authorization: `Bearer ${conn.accessToken}`,
     "Content-Type": "application/json"
-  };
+  }; 
 
-  const response = await axios.post(url, contactData, { headers });
+  const response = await axios.post(url, {tablename:"contact", operationtype:"create", data: contactData}, { headers });
   return response.data;
 }
 
-// ✏️ Call Apex REST API to update contact
-async function updateContactInSalesforce(id, updates) {
+
+async function updateContactInSalesforce(contactData) {
+  console.log("Creating contact with data:", contactData);
   const conn = await connectToSalesforce();
 
-  const url = `${conn.instanceUrl}/services/apexrest/ContactAPI/${id}`;
+  const url = `${conn.instanceUrl}/services/apexrest/ContactAPI`;
   const headers = {
     Authorization: `Bearer ${conn.accessToken}`,
     "Content-Type": "application/json"
-  };
+  }; 
 
-  const response = await axios.put(url, updates, { headers });
-  return response.data;
+const response = await axios.post(url, {tablename:"contact", operationtype:"update", data: contactData}, { headers });
+    return response.data;
 }
+
+
 
 // 🧠 MCP Methods (using Apex API)
 const mcpMethods = {
@@ -144,11 +147,11 @@ app.post("/create-contact", async (req, res) => {
 });
 
 // 🌐 Update Contact Endpoint
-app.put("/update-contact/:id", async (req, res) => {
+app.post("/update-contact", async (req, res) => {
   try {
-    const updatedContact = await updateContactInSalesforce(req.params.id, req.body);
-    res.json({
-      Id: updatedContact.Id,
+    const contactId = await updateContactInSalesforce(req.body);
+    res.status(201).json({
+      Id: contactId,
       Message: "Contact updated successfully"
     });
   } catch (error) {
