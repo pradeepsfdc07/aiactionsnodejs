@@ -42,6 +42,20 @@ async function callContactByEmail(email) {
   return response.data;
 }
 
+// 📱 Call Apex REST API to create contact
+async function createContactInSalesforce(contactData) {
+  const conn = await connectToSalesforce();
+
+  const url = `${conn.instanceUrl}/services/apexrest/ContactAPI`;
+  const headers = {
+    Authorization: `Bearer ${conn.accessToken}`,
+    "Content-Type": "application/json"
+  };
+
+  const response = await axios.post(url, contactData, { headers });
+  return response.data;
+}
+
 // 🧠 MCP Methods (using Apex API)
 const mcpMethods = {
   getContactByEmail: async ({ email }) => {
@@ -95,6 +109,19 @@ app.get("/custom-contact", async (req, res) => {
       Name: contact.Name,
       Email: contact.Email,
       Message: "Contact retrieved using custom Apex endpoint"
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 🌐 Create Contact Endpoint
+app.post("/create-contact", async (req, res) => {
+  try {
+    const contactId = await createContactInSalesforce(req.body);
+    res.status(201).json({
+      Id: contactId,
+      Message: "Contact created successfully"
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
