@@ -73,6 +73,49 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
+  /update-contact/{id}:
+    put:
+      operationId: updateContact
+      summary: Update an existing contact in Salesforce via Apex REST
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Salesforce Contact ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateContact"
+      responses:
+        "200":
+          description: Contact updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContactResponse"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Contact not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
 components:
   schemas:
     ContactResponse:
@@ -93,6 +136,18 @@ components:
         - FirstName
         - LastName
         - Email
+      properties:
+        FirstName:
+          type: string
+        LastName:
+          type: string
+        Email:
+          type: string
+        Phone:
+          type: string
+
+    UpdateContact:
+      type: object
       properties:
         FirstName:
           type: string

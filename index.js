@@ -57,6 +57,20 @@ async function createContactInSalesforce(contactData) {
   return response.data;
 }
 
+// ✏️ Call Apex REST API to update contact
+async function updateContactInSalesforce(id, updates) {
+  const conn = await connectToSalesforce();
+
+  const url = `${conn.instanceUrl}/services/apexrest/ContactAPI/${id}`;
+  const headers = {
+    Authorization: `Bearer ${conn.accessToken}`,
+    "Content-Type": "application/json"
+  };
+
+  const response = await axios.put(url, updates, { headers });
+  return response.data;
+}
+
 // 🧠 MCP Methods (using Apex API)
 const mcpMethods = {
   getContactByEmail: async ({ email }) => {
@@ -123,6 +137,19 @@ app.post("/create-contact", async (req, res) => {
     res.status(201).json({
       Id: contactId,
       Message: "Contact created successfully"
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 🌐 Update Contact Endpoint
+app.put("/update-contact/:id", async (req, res) => {
+  try {
+    const updatedContact = await updateContactInSalesforce(req.params.id, req.body);
+    res.json({
+      Id: updatedContact.Id,
+      Message: "Contact updated successfully"
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
