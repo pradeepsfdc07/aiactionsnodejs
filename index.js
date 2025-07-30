@@ -33,16 +33,15 @@ async function connectToSalesforce() {
 async function getContactsByCustomFilter(filter) {
   const conn = await connectToSalesforce();
 
-  // Basic protection: prevent destructive keywords (optional, for safety)
-  if (!filter || /DELETE|UPDATE|INSERT/i.test(filter)) {
-    throw new Error("Invalid or unsafe filter provided.");
-  }
+  const url = `${conn.instanceUrl}/services/apexrest/ContactAPI?email=${encodeURIComponent(filter)}`;
+  const headers = {
+    Authorization: `Bearer ${conn.accessToken}`,
+    "Content-Type": "application/json"
+  };
 
-  const query = `SELECT Id, Name, Email, CreatedDate FROM Contact WHERE ${filter}`;
-  const result = await conn.query(query);
-  return result.records;
+  const response = await axios.get(url, { headers });
+  return response.data;
 }
-
 
 // 📱 Call Apex REST API by Email
 async function callContactByEmail(email) {
