@@ -53,7 +53,7 @@ async function createContactInSalesforce(contactData) {
     "Content-Type": "application/json"
   }; 
 
-  const response = await axios.post(url, {tablename:"contact", operationtype:"create", data: contactData}, { headers });
+  const response = await axios.post(url, contactData, { headers });
   return response.data;
 }
 
@@ -68,7 +68,7 @@ async function updateContactInSalesforce(contactData) {
     "Content-Type": "application/json"
   }; 
 
-const response = await axios.post(url, {tablename:"contact", operationtype:"update", data: contactData}, { headers });
+const response = await axios.post(url, contactData, { headers });
     return response.data;
 }
 
