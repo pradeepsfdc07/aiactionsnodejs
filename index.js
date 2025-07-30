@@ -28,21 +28,6 @@ async function connectToSalesforce() {
   return conn;
 }
 
-
-// 🔍 Get Contacts with Custom Filter
-async function getContactsByCustomFilter(filter) {
-  const conn = await connectToSalesforce();
-
-  const url = `${conn.instanceUrl}/services/apexrest/ContactAPI?email=${encodeURIComponent(filter)}`;
-  const headers = {
-    Authorization: `Bearer ${conn.accessToken}`,
-    "Content-Type": "application/json"
-  };
-
-  const response = await axios.get(url, { headers });
-  return response.data;
-}
-
 // 📱 Call Apex REST API by Email
 async function callContactByEmail(email) {
   const conn = await connectToSalesforce();
@@ -57,7 +42,7 @@ async function callContactByEmail(email) {
   return response.data;
 }
 
-// 📱 Unified create/update/delete handler
+// 📦 Unified create/update/delete handler (via Apex)
 async function contactOperationInSalesforce(contactData) {
   console.log("Contact operation payload:", contactData);
   const conn = await connectToSalesforce();
@@ -72,7 +57,25 @@ async function contactOperationInSalesforce(contactData) {
   return response.data;
 }
 
-// 🧠 MCP Methods (using Apex API)
+// 🔍 Run SOQL query with custom filter
+async function getContactsByCustomFilter(filter) {
+  const conn = await connectToSalesforce();
+
+  if (!filter || typeof filter !== "string") {
+    throw new Error("Missing or invalid SOQL filter.");
+  }
+
+  // Basic SOQL safety (optional)
+  if (/delete|insert|update/i.test(filter)) {
+    throw new Error("Unsafe SOQL keyword detected in filter.");
+  }
+
+  const query = `SELECT Id, FirstName, LastName, Email, Phone, CreatedDate FROM Contact WHERE ${filter}`;
+  const result = await conn.query(query);
+  return result.records;
+}
+
+// 🧠 MCP Methods (using Apex and SOQL)
 const mcpMethods = {
   getContactByEmail: async ({ email }) => {
     const contact = await callContactByEmail(email);
@@ -83,7 +86,8 @@ const mcpMethods = {
       Message: "Contact retrieved using Apex REST"
     };
   },
-    getContactsByFilter: async ({ filter }) => {
+
+  getContactsByFilter: async ({ filter }) => {
     const contacts = await getContactsByCustomFilter(filter);
     return {
       count: contacts.length,
@@ -118,7 +122,7 @@ app.post(MCP_ENDPOINT, async (req, res) => {
   }
 });
 
-// 🌐 Custom REST Endpoint: /custom-contact?email=
+// 🌐 GET /custom-contact?email=
 app.get("/custom-contact", async (req, res) => {
   const { email } = req.query;
 
@@ -139,7 +143,7 @@ app.get("/custom-contact", async (req, res) => {
   }
 });
 
-// 🌐 Unified Create/Update/Delete Contact Endpoint
+// 🌐 POST /contact-action (create/update/delete)
 app.post("/contact-action", async (req, res) => {
   try {
     const contactId = await contactOperationInSalesforce(req.body);
@@ -148,6 +152,27 @@ app.post("/contact-action", async (req, res) => {
       Message: `Contact ${req.body.operationtype}d successfully`
     });
   } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 🌐 POST /contacts-by-filter
+app.post("/contacts-by-filter", async (req, res) => {
+  try {
+    const { filter } = req.body;
+
+    if (!filter || typeof filter !== "string") {
+      return res.status(400).json({ error: "Missing or invalid 'filter' in request body." });
+    }
+
+    const contacts = await getContactsByCustomFilter(filter);
+    res.status(200).json({
+      count: contacts.length,
+      contacts,
+      Message: "Contacts retrieved using custom filter"
+    });
+  } catch (error) {
+    console.error("Error in /contacts-by-filter:", error.message);
     res.status(500).json({ error: error.message });
   }
 });
@@ -162,4 +187,4 @@ app.get("/openapi.yaml", (req, res) => {
 });
 
 // 🚀 Start Server
-app.listen(PORT, () => console.log(`Server running at http://localhost:${PORT}`));
+app.listen(PORT, () => console.log(`🚀 Server running at http://localhost:${PORT}`));
