@@ -28,6 +28,22 @@ async function connectToSalesforce() {
   return conn;
 }
 
+
+// 🔍 Get Contacts with Custom Filter
+async function getContactsByCustomFilter(filter) {
+  const conn = await connectToSalesforce();
+
+  // Basic protection: prevent destructive keywords (optional, for safety)
+  if (!filter || /DELETE|UPDATE|INSERT/i.test(filter)) {
+    throw new Error("Invalid or unsafe filter provided.");
+  }
+
+  const query = `SELECT Id, Name, Email, CreatedDate FROM Contact WHERE ${filter}`;
+  const result = await conn.query(query);
+  return result.records;
+}
+
+
 // 📱 Call Apex REST API by Email
 async function callContactByEmail(email) {
   const conn = await connectToSalesforce();
@@ -66,6 +82,14 @@ const mcpMethods = {
       Name: contact.Name,
       Email: contact.Email,
       Message: "Contact retrieved using Apex REST"
+    };
+  },
+    getContactsByFilter: async ({ filter }) => {
+    const contacts = await getContactsByCustomFilter(filter);
+    return {
+      count: contacts.length,
+      contacts,
+      Message: `Contacts retrieved using filter: ${filter}`
     };
   }
 };
