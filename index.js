@@ -1,8 +1,5 @@
-// 📦 Combined MCP + OpenAPI + Apex REST wrapper server
-
 const express = require("express");
 const axios = require("axios");
-const fs = require("fs");
 const path = require("path");
 const jsforce = require("jsforce");
 require("dotenv").config();
@@ -10,91 +7,62 @@ require("dotenv").config();
 const app = express();
 app.use(express.json());
 
-// 🌐 Constants
 const PORT = process.env.PORT || 3000;
 const MCP_ENDPOINT = "/mcp";
 
-// 🔐 Salesforce OAuth Login
+// 🔐 Salesforce Connection
 async function connectToSalesforce() {
-  const conn = new jsforce.Connection({
-    loginUrl: process.env.SF_LOGIN_URL
-  });
-
+  const conn = new jsforce.Connection({ loginUrl: process.env.SF_LOGIN_URL });
   await conn.login(
     process.env.SF_USERNAME,
     process.env.SF_PASSWORD + process.env.SF_TOKEN
   );
-
   return conn;
 }
 
-// 📱 Call Apex REST API by Email
-async function callContactByEmail(email) {
+// 📦 Create, Update, Delete Contact (via Apex REST)
+async function performContactAction(contactPayload) {
+  console.log("📦 Performing contact action:", contactPayload);
   const conn = await connectToSalesforce();
-
-  const url = `${conn.instanceUrl}/services/apexrest/ContactAPI?email=${encodeURIComponent(email)}`;
-  const headers = {
-    Authorization: `Bearer ${conn.accessToken}`,
-    "Content-Type": "application/json"
-  };
-
-  const response = await axios.get(url, { headers });
-  return response.data;
-}
-
-// 📦 Unified create/update/delete handler (via Apex)
-async function contactOperationInSalesforce(contactData) {
-  console.log("Contact operation payload:", contactData);
-  const conn = await connectToSalesforce();
-
   const url = `${conn.instanceUrl}/services/apexrest/ContactAPI`;
+
   const headers = {
     Authorization: `Bearer ${conn.accessToken}`,
-    "Content-Type": "application/json"
+    "Content-Type": "application/json",
   };
 
-  const response = await axios.post(url, contactData, { headers });
+  const response = await axios.post(url, contactPayload, { headers });
   return response.data;
 }
 
-// 🔍 Run SOQL query with custom filter
-async function getContactsByCustomFilter(filter) {
-  const conn = await connectToSalesforce();
-
+// 🔍 Query contacts using a custom SOQL filter
+async function queryContactsWithSOQLFilter(filter) {
   if (!filter || typeof filter !== "string") {
     throw new Error("Missing or invalid SOQL filter.");
   }
 
-  // Basic SOQL safety (optional)
   if (/delete|insert|update/i.test(filter)) {
     throw new Error("Unsafe SOQL keyword detected in filter.");
   }
 
+  const conn = await connectToSalesforce();
   const query = `SELECT Id, FirstName, LastName, Email, Phone, CreatedDate FROM Contact WHERE ${filter}`;
+  console.log("🔍 Running SOQL Query:", query);
+
   const result = await conn.query(query);
   return result.records;
 }
 
-// 🧠 MCP Methods (using Apex and SOQL)
+// 🧠 MCP Methods
 const mcpMethods = {
-  getContactByEmail: async ({ email }) => {
-    const contact = await callContactByEmail(email);
-    return {
-      Id: contact.Id,
-      Name: contact.Name,
-      Email: contact.Email,
-      Message: "Contact retrieved using Apex REST"
-    };
-  },
-
-  getContactsByFilter: async ({ filter }) => {
-    const contacts = await getContactsByCustomFilter(filter);
+  getContactsUsingFilter: async ({ filter }) => {
+    const contacts = await queryContactsWithSOQLFilter(filter);
     return {
       count: contacts.length,
       contacts,
-      Message: `Contacts retrieved using filter: ${filter}`
+      Message: `Contacts retrieved using filter: ${filter}`,
     };
-  }
+  },
 };
 
 // ⚙️ MCP Endpoint
@@ -106,7 +74,7 @@ app.post(MCP_ENDPOINT, async (req, res) => {
     return res.status(400).json({
       jsonrpc: "2.0",
       error: { code: -32601, message: "Method not found" },
-      id
+      id,
     });
   }
 
@@ -117,74 +85,57 @@ app.post(MCP_ENDPOINT, async (req, res) => {
     res.json({
       jsonrpc: "2.0",
       error: { code: -32000, message: error.message },
-      id
+      id,
     });
   }
 });
 
-// 🌐 GET /custom-contact?email=
-app.get("/custom-contact", async (req, res) => {
-  const { email } = req.query;
-
-  if (!email) {
-    return res.status(400).json({ error: "Provide 'email' query param." });
-  }
-
-  try {
-    const contact = await callContactByEmail(email);
-    res.json({
-      Id: contact.Id,
-      Name: contact.Name,
-      Email: contact.Email,
-      Message: "Contact retrieved using custom Apex endpoint"
-    });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// 🌐 POST /contact-action (create/update/delete)
+// 🌐 REST Endpoint: POST /contact-action
 app.post("/contact-action", async (req, res) => {
   try {
-    const contactId = await contactOperationInSalesforce(req.body);
+    const contactId = await performContactAction(req.body);
     res.status(201).json({
       Id: contactId,
-      Message: `Contact ${req.body.operationtype}d successfully`
+      Message: `Contact ${req.body.operationtype}d successfully`,
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
 
-// 🌐 POST /contacts-by-filter
+// 🌐 REST Endpoint: POST /contacts-by-filter
 app.post("/contacts-by-filter", async (req, res) => {
   try {
     const { filter } = req.body;
 
     if (!filter || typeof filter !== "string") {
-      return res.status(400).json({ error: "Missing or invalid 'filter' in request body." });
+      return res.status(400).json({ error: "Missing or invalid 'filter'" });
     }
 
-    const contacts = await getContactsByCustomFilter(filter);
+    const contacts = await queryContactsWithSOQLFilter(filter);
     res.status(200).json({
       count: contacts.length,
       contacts,
-      Message: "Contacts retrieved using custom filter"
+      Message: "Contacts retrieved using custom filter",
     });
   } catch (error) {
-    console.error("Error in /contacts-by-filter:", error.message);
+    console.error("❌ /contacts-by-filter error:", error.message);
     res.status(500).json({ error: error.message });
   }
 });
 
-// 🗂️ Serve OpenAPI and Manifest files
+// 📄 Serve Plugin Manifest
 app.get("/.well-known/ai-plugin.json", (req, res) => {
   res.sendFile(path.join(__dirname, ".well-known/ai-plugin.json"));
 });
 
+// 📄 Serve OpenAPI YAML
 app.get("/openapi.yaml", (req, res) => {
+  res.setHeader("Content-Type", "text/yaml");
   res.sendFile(path.join(__dirname, "openapi.yaml"));
 });
 
 // 🚀 Start Server
-app.listen(PORT, () => console.log(`🚀 Server running at http://localhost:${PORT}`));
+app.listen(PORT, () =>
+  console.log(`🚀 Server running at http://localhost:${PORT}`)
+);

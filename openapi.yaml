@@ -1,47 +1,17 @@
 openapi: 3.0.1
 info:
   title: Salesforce Contact API
-  version: 1.0.0
+  version: 1.0.1
+  description: Use this API to create, update, delete, or query Salesforce contacts using SOQL filters.
 
 servers:
   - url: https://aiactionsnodejs.onrender.com
 
 paths:
-  /custom-contact:
-    get:
-      operationId: getCustomContact
-      summary: Get contact details using email via Apex REST
-      parameters:
-        - name: email
-          in: query
-          required: true
-          schema:
-            type: string
-          description: Contact email address (e.g., user@example.com)
-      responses:
-        "200":
-          description: Contact retrieved successfully
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ContactResponse"
-        "400":
-          description: Missing or invalid query parameter
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "500":
-          description: Server error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-
   /contact-action:
     post:
-      operationId: contactAction
-      summary: Perform create, update, or delete operation on Contact
+      operationId: performContactAction
+      summary: Create, update, or delete a Salesforce Contact
       requestBody:
         required: true
         content:
@@ -70,8 +40,8 @@ paths:
 
   /contacts-by-filter:
     post:
-      operationId: getContactsByFilter
-      summary: Get contacts using custom SOQL filter
+      operationId: getContactsUsingFilter
+      summary: Retrieve Salesforce contacts using a custom SOQL WHERE filter
       requestBody:
         required: true
         content:
@@ -83,8 +53,8 @@ paths:
               properties:
                 filter:
                   type: string
-                  example: "CreatedDate = TODAY"
-                  description: A valid Salesforce SOQL WHERE clause (e.g., "Email LIKE '%gmail.com%'")
+                  example: "Email LIKE '%gmail.com%'"
+                  description: A valid SOQL WHERE clause to filter contacts
       responses:
         "200":
           description: Contacts retrieved successfully
@@ -112,8 +82,6 @@ components:
       properties:
         Id:
           type: string
-        Name:
-          type: string
         FirstName:
           type: string
         LastName:
@@ -121,6 +89,8 @@ components:
         Phone:
           type: string
         Email:
+          type: string
+        CreatedDate:
           type: string
         Message:
           type: string
@@ -188,4 +158,4 @@ components:
       properties:
         error:
           type: string
-          example: Missing email parameter
+          example: Invalid SOQL filter or missing fields
