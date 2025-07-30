@@ -7,41 +7,10 @@ servers:
   - url: https://aiactionsnodejs.onrender.com
 
 paths:
-  /custom-contact:
-    get:
-      operationId: getCustomContact
-      summary: Get contact details using email via Apex REST
-      parameters:
-        - name: email
-          in: query
-          required: true
-          schema:
-            type: string
-          description: Contact email address (e.g., user@example.com)
-      responses:
-        "200":
-          description: Contact retrieved successfully
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ContactResponse"
-        "400":
-          description: Missing or invalid query parameter
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "500":
-          description: Server error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-
   /contact-action:
     post:
-      operationId: contactAction
-      summary: Perform create, update, or delete operation on Contact
+      operationId: performContactAction
+      summary: Perform create, update, or delete action on a Contact using Apex
       requestBody:
         required: true
         content:
@@ -70,8 +39,8 @@ paths:
 
   /contacts-by-filter:
     post:
-      operationId: getContactsByFilter
-      summary: Get contacts using custom SOQL filter
+      operationId: getContactsUsingFilter
+      summary: Retrieve contacts from Salesforce using a custom SOQL WHERE clause
       requestBody:
         required: true
         content:
@@ -188,4 +157,4 @@ components:
       properties:
         error:
           type: string
-          example: Missing email parameter
+          example: Invalid filter format
