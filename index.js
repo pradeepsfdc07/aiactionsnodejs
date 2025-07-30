@@ -42,37 +42,20 @@ async function callContactByEmail(email) {
   return response.data;
 }
 
-// 📱 Call Apex REST API to create contact
-async function createContactInSalesforce(contactData) {
-  console.log("Creating contact with data:", contactData);
+// 📱 Unified create/update/delete handler
+async function contactOperationInSalesforce(contactData) {
+  console.log("Contact operation payload:", contactData);
   const conn = await connectToSalesforce();
 
   const url = `${conn.instanceUrl}/services/apexrest/ContactAPI`;
   const headers = {
     Authorization: `Bearer ${conn.accessToken}`,
     "Content-Type": "application/json"
-  }; 
+  };
 
   const response = await axios.post(url, contactData, { headers });
   return response.data;
 }
-
-
-async function updateContactInSalesforce(contactData) {
-  console.log("Creating contact with data:", contactData);
-  const conn = await connectToSalesforce();
-
-  const url = `${conn.instanceUrl}/services/apexrest/ContactAPI`;
-  const headers = {
-    Authorization: `Bearer ${conn.accessToken}`,
-    "Content-Type": "application/json"
-  }; 
-
-const response = await axios.post(url, contactData, { headers });
-    return response.data;
-}
-
-
 
 // 🧠 MCP Methods (using Apex API)
 const mcpMethods = {
@@ -133,26 +116,13 @@ app.get("/custom-contact", async (req, res) => {
   }
 });
 
-// 🌐 Create Contact Endpoint
-app.post("/create-contact", async (req, res) => {
+// 🌐 Unified Create/Update/Delete Contact Endpoint
+app.post("/contact-action", async (req, res) => {
   try {
-    const contactId = await createContactInSalesforce(req.body);
+    const contactId = await contactOperationInSalesforce(req.body);
     res.status(201).json({
       Id: contactId,
-      Message: "Contact created successfully"
-    });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// 🌐 Update Contact Endpoint
-app.post("/update-contact", async (req, res) => {
-  try {
-    const contactId = await updateContactInSalesforce(req.body);
-    res.status(201).json({
-      Id: contactId,
-      Message: "Contact updated successfully"
+      Message: `Contact ${req.body.operationtype}d successfully`
     });
   } catch (error) {
     res.status(500).json({ error: error.message });

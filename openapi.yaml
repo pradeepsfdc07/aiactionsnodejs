@@ -38,47 +38,29 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
-  /create-contact:
+  /contact-action:
     post:
-      operationId: createContact
-      summary: Create a new contact in Salesforce via Apex REST
+      operationId: contactAction
+      summary: Perform create, update, or delete operation on Contact
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ContactOperationRequest"
+              $ref: "#/components/schemas/ContactActionRequest"
       responses:
-        "201":
-          description: Contact created successfully
+        "200":
+          description: Operation completed successfully
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/OperationResponse"
-        "500":
-          description: Server error
+        "400":
+          description: Invalid request
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-
-  /update-contact:
-    post:
-      operationId: updateContact
-      summary: Update an existing contact in Salesforce via Apex REST
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ContactOperationRequest"
-      responses:
-        "201":
-          description: Contact updated successfully
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/OperationResponse"
         "500":
           description: Server error
           content:
@@ -106,7 +88,7 @@ components:
         Message:
           type: string
 
-    ContactOperationRequest:
+    ContactActionRequest:
       type: object
       required:
         - tablename
@@ -118,14 +100,15 @@ components:
           example: contact
         operationtype:
           type: string
-          enum: [create, update]
+          enum: [create, update, delete]
           example: create
         data:
           type: object
+          required: []
           properties:
             Id:
               type: string
-              description: Required only for update
+              description: Required for update and delete
             FirstName:
               type: string
             LastName:
