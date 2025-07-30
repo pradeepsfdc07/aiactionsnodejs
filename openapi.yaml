@@ -95,6 +95,12 @@ components:
           type: string
         Name:
           type: string
+        FirstName:
+          type: string
+        LastName:
+          type: string
+        Phone:
+          type: string
         Email:
           type: string
         Message:
