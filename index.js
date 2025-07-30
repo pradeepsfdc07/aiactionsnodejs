@@ -42,7 +42,7 @@ async function callContactByEmail(email) {
   return response.data;
 }
 
-// 📱 Unified create/update/delete handler
+// 📥 Unified contact action (create/update/delete/retrieve)
 async function contactOperationInSalesforce(contactData) {
   console.log("Contact operation payload:", contactData);
   const conn = await connectToSalesforce();
@@ -66,6 +66,19 @@ const mcpMethods = {
       Name: contact.Name,
       Email: contact.Email,
       Message: "Contact retrieved using Apex REST"
+    };
+  },
+
+  getTodayContacts: async () => {
+    const payload = {
+      tablename: "contact",
+      operationtype: "retrieve",
+      data: { filter: "createdToday" }
+    };
+    const result = await contactOperationInSalesforce(payload);
+    return {
+      Records: result,
+      Message: "Today's contacts retrieved"
     };
   }
 };
@@ -116,13 +129,13 @@ app.get("/custom-contact", async (req, res) => {
   }
 });
 
-// 🌐 Unified Create/Update/Delete Contact Endpoint
+// 🌐 Unified Create/Update/Delete/Retrieve Contact Endpoint
 app.post("/contact-action", async (req, res) => {
   try {
-    const contactId = await contactOperationInSalesforce(req.body);
-    res.status(201).json({
-      Id: contactId,
-      Message: `Contact ${req.body.operationtype}d successfully`
+    const result = await contactOperationInSalesforce(req.body);
+    res.status(200).json({
+      Result: result,
+      Message: `Contact ${req.body.operationtype} operation completed`
     });
   } catch (error) {
     res.status(500).json({ error: error.message });

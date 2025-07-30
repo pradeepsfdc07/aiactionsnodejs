@@ -41,7 +41,7 @@ paths:
   /contact-action:
     post:
       operationId: contactAction
-      summary: Perform create, update, or delete operation on Contact
+      summary: Perform create, update, delete, or retrieve operations on Contact
       requestBody:
         required: true
         content:
@@ -54,7 +54,11 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/OperationResponse"
+                oneOf:
+                  - $ref: "#/components/schemas/OperationResponse"
+                  - type: array
+                    items:
+                      $ref: "#/components/schemas/ContactResponse"
         "400":
           description: Invalid request
           content:
@@ -100,11 +104,11 @@ components:
           example: contact
         operationtype:
           type: string
-          enum: [create, update, delete]
-          example: create
+          enum: [create, update, delete, retrieve]
+          example: retrieve
         data:
           type: object
-          required: []
+          description: Contact fields for create/update or filter for retrieve
           properties:
             Id:
               type: string
@@ -117,17 +121,14 @@ components:
               type: string
             Phone:
               type: string
+            filter:
+              type: string
+              example: createdToday
+              description: Filter used during retrieve
 
     OperationResponse:
       type: object
       properties:
         Id:
           type: string
-        Message:
-          type: string
-
-    ErrorResponse:
-      type: object
-      properties:
-        error:
-          type: string
+        Message
