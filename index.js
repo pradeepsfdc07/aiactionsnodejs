@@ -44,6 +44,7 @@ async function callContactByEmail(email) {
 
 // 📱 Call Apex REST API to create contact
 async function createContactInSalesforce(contactData) {
+  console.log("Creating contact with data:", contactData);
   const conn = await connectToSalesforce();
 
   const url = `${conn.instanceUrl}/services/apexrest/ContactAPI`;
