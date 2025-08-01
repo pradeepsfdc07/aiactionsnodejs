@@ -1,9 +1,9 @@
 {
   "schema_version": "v1",
-  "name_for_human": "Test Contact Plugin",
-  "name_for_model": "test_contact_plugin",
-  "description_for_human": "Retrieve mock contacts",
-  "description_for_model": "Use this to retrieve a list of mock Salesforce contacts.",
+  "name_for_human": "Contact Filter Plugin",
+  "name_for_model": "contact_filter_plugin",
+  "description_for_human": "Search contacts with a filter",
+  "description_for_model": "Use this to get a list of mock contacts filtered by name.",
   "auth": {
     "type": "none"
   },

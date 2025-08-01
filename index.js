@@ -7,29 +7,34 @@ const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 
-// 🔍 Dummy contact list
+// 🔍 Dummy contacts
 const contacts = [
   { Id: "001", FirstName: "John", LastName: "Doe", Email: "john@example.com" },
-  { Id: "002", FirstName: "Jane", LastName: "Smith", Email: "jane@example.com" }
+  { Id: "002", FirstName: "Jane", LastName: "Smith", Email: "jane@example.com" },
+  { Id: "003", FirstName: "Alice", LastName: "Johnson", Email: "alice@example.com" }
 ];
 
-// 📄 Serve ai-plugin.json
+// 🌐 GET /get-contacts?filter=John
+app.get("/get-contacts", (req, res) => {
+  const filter = req.query.filter?.toLowerCase() || "";
+  const filtered = contacts.filter(c =>
+    `${c.FirstName} ${c.LastName}`.toLowerCase().includes(filter)
+  );
+  res.json({ count: filtered.length, contacts: filtered });
+});
+
+// 🔧 Plugin Manifest
 app.get("/.well-known/ai-plugin.json", (req, res) => {
   res.sendFile(path.join(__dirname, ".well-known", "ai-plugin.json"));
 });
 
-// 📄 Serve openapi.yaml
+// 📄 OpenAPI YAML
 app.get("/openapi.yaml", (req, res) => {
   res.setHeader("Content-Type", "text/yaml");
   res.sendFile(path.join(__dirname, "openapi.yaml"));
 });
 
-// 🧪 GET /get-contacts - return test data
-app.get("/get-contacts", (req, res) => {
-  res.json({ contacts });
-});
-
 // 🚀 Start server
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
-});
+app.listen(PORT, () =>
+  console.log(`🚀 Server running on http://localhost:${PORT}`)
+);

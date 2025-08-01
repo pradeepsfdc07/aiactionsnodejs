@@ -1,8 +1,8 @@
 openapi: 3.0.1
 info:
-  title: Salesforce Contact API (Test)
+  title: Test Contact API
   version: 1.0.0
-  description: Returns test contacts from a mock API.
+  description: Retrieve mock Salesforce contacts with optional filter.
 
 servers:
   - url: https://aiactionsnodejs.onrender.com
@@ -11,15 +11,24 @@ paths:
   /get-contacts:
     get:
       operationId: getTestContacts
-      summary: Get mock contact list
+      summary: Get filtered mock contacts
+      parameters:
+        - in: query
+          name: filter
+          schema:
+            type: string
+          required: false
+          description: Optional name filter (e.g. John)
       responses:
         "200":
-          description: Returns an array of test contacts
+          description: A filtered list of contacts
           content:
             application/json:
               schema:
                 type: object
                 properties:
+                  count:
+                    type: integer
                   contacts:
                     type: array
                     items:
