@@ -1,40 +1,75 @@
+// 📘 Mock Salesforce Contact API Server
 const express = require("express");
 const path = require("path");
-require("dotenv").config();
 
 const app = express();
-const PORT = process.env.PORT || 3000;
-
 app.use(express.json());
 
-// 🔍 Dummy contacts
-const contacts = [
+const PORT = process.env.PORT || 3000;
+
+// 🔧 Mock data
+let contacts = [
   { Id: "001", FirstName: "John", LastName: "Doe", Email: "john@example.com" },
   { Id: "002", FirstName: "Jane", LastName: "Smith", Email: "jane@example.com" },
-  { Id: "003", FirstName: "Alice", LastName: "Johnson", Email: "alice@example.com" }
+  { Id: "003", FirstName: "Sam", LastName: "Wilson", Email: "sam@example.com" }
 ];
 
-// 🌐 GET /get-contacts?filter=John
-app.get("/get-contacts", (req, res) => {
-  const filter = req.query.filter?.toLowerCase() || "";
-  const filtered = contacts.filter(c =>
-    `${c.FirstName} ${c.LastName}`.toLowerCase().includes(filter)
+// 🔍 Filter contacts
+app.post("/get-contacts", (req, res) => {
+  const { filter } = req.body;
+
+  if (!filter || typeof filter !== "string") {
+    return res.status(400).json({ error: "Filter is required and must be a string" });
+  }
+
+  const lower = filter.toLowerCase();
+  const results = contacts.filter(c =>
+    c.FirstName.toLowerCase().includes(lower) ||
+    c.LastName.toLowerCase().includes(lower) ||
+    c.Email.toLowerCase().includes(lower)
   );
-  res.json({ count: filtered.length, contacts: filtered });
+
+  res.json({
+    count: results.length,
+    contacts: results,
+    message: "Contacts retrieved using filter"
+  });
 });
 
-// 🔧 Plugin Manifest
+// 🔁 Update contact
+app.put("/update-contact", (req, res) => {
+  const { Id, FirstName, LastName, Email } = req.body;
+
+  if (!Id) {
+    return res.status(400).json({ error: "Contact Id is required." });
+  }
+
+  const contact = contacts.find(c => c.Id === Id);
+  if (!contact) {
+    return res.status(404).json({ error: "Contact not found." });
+  }
+
+  if (FirstName) contact.FirstName = FirstName;
+  if (LastName) contact.LastName = LastName;
+  if (Email) contact.Email = Email;
+
+  res.json({
+    message: "Contact updated successfully",
+    contact
+  });
+});
+
+// 📄 Serve plugin manifest
 app.get("/.well-known/ai-plugin.json", (req, res) => {
-  res.sendFile(path.join(__dirname, ".well-known", "ai-plugin.json"));
+  res.sendFile(path.join(__dirname, ".well-known/ai-plugin.json"));
 });
 
-// 📄 OpenAPI YAML
+// 📄 Serve OpenAPI
 app.get("/openapi.yaml", (req, res) => {
-  res.setHeader("Content-Type", "text/yaml");
   res.sendFile(path.join(__dirname, "openapi.yaml"));
 });
 
-// 🚀 Start server
-app.listen(PORT, () =>
-  console.log(`🚀 Server running on http://localhost:${PORT}`)
-);
+// 🚀 Start
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on http://localhost:$\{PORT}`);
+});

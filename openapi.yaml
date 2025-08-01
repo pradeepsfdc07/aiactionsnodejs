@@ -1,38 +1,70 @@
 openapi: 3.0.1
 info:
-  title: Test Contact API
+  title: Mock Salesforce Contact API
   version: 1.0.0
-  description: Retrieve mock Salesforce contacts with optional filter.
+  description: Simple API for testing Salesforce contact retrieval and updates
 
 servers:
   - url: https://aiactionsnodejs.onrender.com
 
 paths:
   /get-contacts:
-    get:
-      operationId: getTestContacts
-      summary: Get filtered mock contacts
-      parameters:
-        - in: query
-          name: filter
-          schema:
-            type: string
-          required: false
-          description: Optional name filter (e.g. John)
+    post:
+      summary: Get contacts by text filter
+      operationId: getContacts
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                filter:
+                  type: string
+                  example: "john"
       responses:
         "200":
-          description: A filtered list of contacts
+          description: List of matching contacts
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  count:
-                    type: integer
-                  contacts:
-                    type: array
-                    items:
-                      $ref: "#/components/schemas/Contact"
+                $ref: "#/components/schemas/ContactsResponse"
+        "400":
+          description: Missing or invalid filter
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /update-contact:
+    put:
+      summary: Update a contact by ID
+      operationId: updateContact
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateContactRequest"
+      responses:
+        "200":
+          description: Contact updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UpdateResponse"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Contact not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 
 components:
   schemas:
@@ -46,4 +78,44 @@ components:
         LastName:
           type: string
         Email:
+          type: string
+
+    ContactsResponse:
+      type: object
+      properties:
+        count:
+          type: integer
+        contacts:
+          type: array
+          items:
+            $ref: "#/components/schemas/Contact"
+        message:
+          type: string
+
+    UpdateContactRequest:
+      type: object
+      required:
+        - Id
+      properties:
+        Id:
+          type: string
+        FirstName:
+          type: string
+        LastName:
+          type: string
+        Email:
+          type: string
+
+    UpdateResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        contact:
+          $ref: "#/components/schemas/Contact"
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
           type: string
