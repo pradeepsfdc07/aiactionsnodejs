@@ -1,4 +1,4 @@
-// 📘 Mock Salesforce Contact API Server
+// 📘 Mock Salesforce Multi-Object API Server
 const express = require("express");
 const path = require("path");
 
@@ -7,107 +7,121 @@ app.use(express.json());
 
 const PORT = process.env.PORT || 3000;
 
-// 🔧 Mock data
-let contacts = [
-  { Id: "001", FirstName: "John", LastName: "Doe", Email: "john@example.com" },
-  { Id: "002", FirstName: "Jane", LastName: "Smith", Email: "jane@example.com" },
-  { Id: "003", FirstName: "Sam", LastName: "Wilson", Email: "sam@example.com" }
-];
+// 🔧 Mock table data
+const tables = {
+  contact: [
+    { Id: "001", FirstName: "John", LastName: "Doe", Email: "john@example.com" },
+    { Id: "002", FirstName: "Jane", LastName: "Smith", Email: "jane@example.com" },
+    { Id: "003", FirstName: "Sam", LastName: "Wilson", Email: "sam@example.com" }
+  ],
+  account: [],
+  lead: []
+};
 
-// ➕ Add contact
-app.post("/add-contact", (req, res) => {
-  const { FirstName, LastName, Email } = req.body;
-  console.log("➕ Add contact request received:", req.body);
+// 🛠 Utility to get table
+function getTable(tablename) {
+  if (!tablename || !tables[tablename]) {
+    return null;
+  }
+  return tables[tablename];
+}
+
+// ➕ Add record
+app.post("/add-record", (req, res) => {
+  const { tablename, FirstName, LastName, Email } = req.body;
+  console.log("➕ Add request received:", req.body);
+
+  const table = getTable(tablename);
+  if (!table) {
+    return res.status(400).json({ error: `Invalid tablename: ${tablename}` });
+  }
 
   if (!FirstName || !LastName || !Email) {
-    console.log("❌ Missing required fields");
     return res.status(400).json({ error: "FirstName, LastName, and Email are required." });
   }
 
   const newId = (Math.floor(Math.random() * 10000) + 1000).toString();
-  const newContact = { Id: newId, FirstName, LastName, Email };
-  contacts.push(newContact);
+  const newRecord = { Id: newId, FirstName, LastName, Email };
+  table.push(newRecord);
 
-  console.log("✅ Contact added:", newContact);
   res.status(201).json({
-    message: "Contact added successfully",
-    contact: newContact
+    message: `${tablename} record added successfully`,
+    record: newRecord
   });
 });
 
-// 🔍 Filter contacts
-app.post("/get-contacts", (req, res) => {
-  const { filter } = req.body;
-  console.log("🔍 Received filter request:", filter);
+// 🔍 Filter records
+app.post("/get-records", (req, res) => {
+  const { tablename, filter } = req.body;
+  console.log("🔍 Filter request:", req.body);
+
+  const table = getTable(tablename);
+  if (!table) {
+    return res.status(400).json({ error: `Invalid tablename: ${tablename}` });
+  }
 
   if (!filter || typeof filter !== "string") {
-    console.log("❌ Invalid filter:", filter);
     return res.status(400).json({ error: "Filter is required and must be a string" });
   }
 
   const lower = filter.toLowerCase();
-  const results = contacts.filter(c =>
-    c.FirstName.toLowerCase().includes(lower) ||
-    c.LastName.toLowerCase().includes(lower) ||
-    c.Email.toLowerCase().includes(lower)
+  const results = table.filter(r =>
+    r.FirstName.toLowerCase().includes(lower) ||
+    r.LastName.toLowerCase().includes(lower) ||
+    r.Email.toLowerCase().includes(lower)
   );
 
-  console.log(`✅ Found ${results.length} matching contacts`);
   res.json({
     count: results.length,
-    contacts: results,
-    message: "Contacts retrieved using filter"
+    records: results,
+    message: `${tablename} records retrieved using filter`
   });
 });
 
-// 🔁 Update contact
-app.put("/update-contact", (req, res) => {
-  const { Id, FirstName, LastName, Email } = req.body;
+// 🔁 Update record
+app.put("/update-record", (req, res) => {
+  const { tablename, Id, FirstName, LastName, Email } = req.body;
   console.log("🔁 Update request received:", req.body);
 
-  if (!Id) {
-    console.log("❌ Missing Id in request");
-    return res.status(400).json({ error: "Contact Id is required." });
+  const table = getTable(tablename);
+  if (!table) {
+    return res.status(400).json({ error: `Invalid tablename: ${tablename}` });
   }
 
-  const contact = contacts.find(c => c.Id === Id);
-  if (!contact) {
-    console.log("❌ Contact not found for Id:", Id);
-    return res.status(404).json({ error: "Contact not found." });
+  const record = table.find(r => r.Id === Id);
+  if (!record) {
+    return res.status(404).json({ error: `${tablename} record not found.` });
   }
 
-  if (FirstName) contact.FirstName = FirstName;
-  if (LastName) contact.LastName = LastName;
-  if (Email) contact.Email = Email;
+  if (FirstName) record.FirstName = FirstName;
+  if (LastName) record.LastName = LastName;
+  if (Email) record.Email = Email;
 
-  console.log("✅ Contact updated:", contact);
   res.json({
-    message: "Contact updated successfully",
-    contact
+    message: `${tablename} record updated successfully`,
+    record
   });
 });
 
-// ❌ Delete contact
-app.delete("/delete-contact", (req, res) => {
-  const { Id } = req.body;
-  console.log("🗑️ Delete request received:", Id);
+// ❌ Delete record
+app.delete("/delete-record", (req, res) => {
+  const { tablename, Id } = req.body;
+  console.log("🗑️ Delete request received:", req.body);
 
-  if (!Id) {
-    console.log("❌ Missing Id in delete request");
-    return res.status(400).json({ error: "Contact Id is required." });
+  const table = getTable(tablename);
+  if (!table) {
+    return res.status(400).json({ error: `Invalid tablename: ${tablename}` });
   }
 
-  const index = contacts.findIndex(c => c.Id === Id);
+  const index = table.findIndex(r => r.Id === Id);
   if (index === -1) {
-    console.log("❌ Contact not found for deletion:", Id);
-    return res.status(404).json({ error: "Contact not found." });
+    return res.status(404).json({ error: `${tablename} record not found.` });
   }
 
-  const removed = contacts.splice(index, 1);
-  console.log("✅ Contact deleted:", removed[0]);
+  const removed = table.splice(index, 1);
 
   res.json({
-    message: "Contact deleted successfully",
+    message: `${tablename} record deleted successfully`,
     deleted: removed[0]
   });
 });

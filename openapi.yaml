@@ -1,54 +1,60 @@
 openapi: 3.0.1
 info:
-  title: Mock Salesforce Contact API
+  title: Mock Salesforce Object API
   version: 1.0.0
-  description: Simple API for testing Salesforce contact retrieval, creation, updates, and deletion
+  description: Simple API for testing Salesforce-style object operations with dynamic tablename
 
 servers:
   - url: https://aiactionsnodejs.onrender.com
 
 paths:
-  /get-contacts:
+  /get-records:
     post:
-      summary: Get contacts by text filter
-      operationId: getContacts
+      summary: Get records by text filter
+      operationId: getRecords
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
+              required:
+                - tablename
+                - filter
               properties:
+                tablename:
+                  type: string
+                  example: "contact"
                 filter:
                   type: string
                   example: "john"
       responses:
         "200":
-          description: List of matching contacts
+          description: List of matching records
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ContactsResponse"
+                $ref: "#/components/schemas/RecordsResponse"
         "400":
-          description: Missing or invalid filter
+          description: Missing or invalid input
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
-  /add-contact:
+  /add-record:
     post:
-      summary: Add a new contact
-      operationId: addContact
+      summary: Add a new record
+      operationId: addRecord
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/AddContactRequest"
+              $ref: "#/components/schemas/AddRecordRequest"
       responses:
         "201":
-          description: Contact added successfully
+          description: Record added successfully
           content:
             application/json:
               schema:
@@ -60,19 +66,19 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
-  /update-contact:
+  /update-record:
     put:
-      summary: Update a contact by ID
-      operationId: updateContact
+      summary: Update a record by ID
+      operationId: updateRecord
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/UpdateContactRequest"
+              $ref: "#/components/schemas/UpdateRecordRequest"
       responses:
         "200":
-          description: Contact updated
+          description: Record updated
           content:
             application/json:
               schema:
@@ -84,16 +90,16 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
         "404":
-          description: Contact not found
+          description: Record not found
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
-  /delete-contact:
+  /delete-record:
     delete:
-      summary: Delete a contact by ID
-      operationId: deleteContact
+      summary: Delete a record by ID
+      operationId: deleteRecord
       requestBody:
         required: true
         content:
@@ -101,26 +107,30 @@ paths:
             schema:
               type: object
               required:
+                - tablename
                 - Id
               properties:
+                tablename:
+                  type: string
+                  example: "contact"
                 Id:
                   type: string
                   example: "002"
       responses:
         "200":
-          description: Contact deleted successfully
+          description: Record deleted successfully
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/DeleteResponse"
         "400":
-          description: Invalid request (missing Id)
+          description: Invalid request (missing Id or tablename)
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
         "404":
-          description: Contact not found
+          description: Record not found
           content:
             application/json:
               schema:
@@ -128,7 +138,7 @@ paths:
 
 components:
   schemas:
-    Contact:
+    Record:
       type: object
       properties:
         Id:
@@ -140,25 +150,29 @@ components:
         Email:
           type: string
 
-    ContactsResponse:
+    RecordsResponse:
       type: object
       properties:
         count:
           type: integer
-        contacts:
+        records:
           type: array
           items:
-            $ref: "#/components/schemas/Contact"
+            $ref: "#/components/schemas/Record"
         message:
           type: string
 
-    AddContactRequest:
+    AddRecordRequest:
       type: object
       required:
+        - tablename
         - FirstName
         - LastName
         - Email
       properties:
+        tablename:
+          type: string
+          example: "lead"
         FirstName:
           type: string
         LastName:
@@ -171,14 +185,17 @@ components:
       properties:
         message:
           type: string
-        contact:
-          $ref: "#/components/schemas/Contact"
+        record:
+          $ref: "#/components/schemas/Record"
 
-    UpdateContactRequest:
+    UpdateRecordRequest:
       type: object
       required:
+        - tablename
         - Id
       properties:
+        tablename:
+          type: string
         Id:
           type: string
         FirstName:
@@ -193,8 +210,8 @@ components:
       properties:
         message:
           type: string
-        contact:
-          $ref: "#/components/schemas/Contact"
+        record:
+          $ref: "#/components/schemas/Record"
 
     DeleteResponse:
       type: object
@@ -202,7 +219,7 @@ components:
         message:
           type: string
         deleted:
-          $ref: "#/components/schemas/Contact"
+          $ref: "#/components/schemas/Record"
 
     ErrorResponse:
       type: object
