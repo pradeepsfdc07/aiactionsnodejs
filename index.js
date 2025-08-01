@@ -14,6 +14,27 @@ let contacts = [
   { Id: "003", FirstName: "Sam", LastName: "Wilson", Email: "sam@example.com" }
 ];
 
+// ➕ Add contact
+app.post("/add-contact", (req, res) => {
+  const { FirstName, LastName, Email } = req.body;
+  console.log("➕ Add contact request received:", req.body);
+
+  if (!FirstName || !LastName || !Email) {
+    console.log("❌ Missing required fields");
+    return res.status(400).json({ error: "FirstName, LastName, and Email are required." });
+  }
+
+  const newId = (Math.floor(Math.random() * 10000) + 1000).toString();
+  const newContact = { Id: newId, FirstName, LastName, Email };
+  contacts.push(newContact);
+
+  console.log("✅ Contact added:", newContact);
+  res.status(201).json({
+    message: "Contact added successfully",
+    contact: newContact
+  });
+});
+
 // 🔍 Filter contacts
 app.post("/get-contacts", (req, res) => {
   const { filter } = req.body;
@@ -107,4 +128,3 @@ app.get("/openapi.yaml", (req, res) => {
 app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
 });
-fdfd

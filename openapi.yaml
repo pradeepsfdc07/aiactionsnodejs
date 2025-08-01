@@ -2,7 +2,7 @@ openapi: 3.0.1
 info:
   title: Mock Salesforce Contact API
   version: 1.0.0
-  description: Simple API for testing Salesforce contact retrieval, updates, and deletion
+  description: Simple API for testing Salesforce contact retrieval, creation, updates, and deletion
 
 servers:
   - url: https://aiactionsnodejs.onrender.com
@@ -31,6 +31,30 @@ paths:
                 $ref: "#/components/schemas/ContactsResponse"
         "400":
           description: Missing or invalid filter
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /add-contact:
+    post:
+      summary: Add a new contact
+      operationId: addContact
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AddContactRequest"
+      responses:
+        "201":
+          description: Contact added successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AddResponse"
+        "400":
+          description: Missing fields
           content:
             application/json:
               schema:
@@ -127,6 +151,28 @@ components:
             $ref: "#/components/schemas/Contact"
         message:
           type: string
+
+    AddContactRequest:
+      type: object
+      required:
+        - FirstName
+        - LastName
+        - Email
+      properties:
+        FirstName:
+          type: string
+        LastName:
+          type: string
+        Email:
+          type: string
+
+    AddResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        contact:
+          $ref: "#/components/schemas/Contact"
 
     UpdateContactRequest:
       type: object
