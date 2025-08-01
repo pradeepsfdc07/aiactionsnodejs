@@ -2,8 +2,8 @@
   "schema_version": "v1",
   "name_for_human": "Mock CRM Tool",
   "name_for_model": "mock_crm_tool",
-  "description_for_human": "Get, add, update, and delete mock CRM records like contacts, accounts, or leads",
-  "description_for_model": "Use this tool to get, create, update, or delete mock CRM records dynamically from tables like contact, account, or lead. Pass 'tablename' and optionally 'Id' or 'filter' in the request.",
+  "description_for_human": "Get, add, update, delete CRM records, and send test emails.",
+  "description_for_model": "Use this tool to get, create, update, or delete mock CRM records dynamically from tables like contact, account, or lead. Also supports sending email via the '/send-email' endpoint. Pass 'tablename' and optionally 'Id' or 'filter' in the request.",
   "auth": {
     "type": "none"
   },

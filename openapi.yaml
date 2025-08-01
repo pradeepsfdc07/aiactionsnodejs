@@ -97,7 +97,7 @@ paths:
                 $ref: "#/components/schemas/ErrorResponse"
 
   /delete-record:
-    post:  # ✅ Changed from delete to post
+    post:  # ✅ POST instead of DELETE
       summary: Delete a record by ID
       operationId: deleteRecord
       requestBody:
@@ -131,6 +131,56 @@ paths:
                 $ref: "#/components/schemas/ErrorResponse"
         "404":
           description: Record not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /send-email:
+    post:
+      summary: Send an email using configured SMTP
+      operationId: sendEmail
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - to
+                - subject
+                - text
+              properties:
+                to:
+                  type: string
+                  format: email
+                  example: "recipient@example.com"
+                subject:
+                  type: string
+                  example: "Test Email"
+                text:
+                  type: string
+                  example: "This is a test email from the mock API server."
+      responses:
+        "200":
+          description: Email sent successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  messageId:
+                    type: string
+        "400":
+          description: Missing fields
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Server error
           content:
             application/json:
               schema:
