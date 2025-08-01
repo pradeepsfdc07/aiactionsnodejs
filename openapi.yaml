@@ -10,6 +10,8 @@ servers:
 paths:
   /contact-action:
     post:
+      tags:
+        - Contact
       operationId: performContactAction
       summary: Create, update, or delete a Salesforce Contact
       requestBody:
@@ -40,6 +42,8 @@ paths:
 
   /contacts-by-filter:
     post:
+      tags:
+        - Contact
       operationId: getContactsUsingFilter
       summary: Retrieve Salesforce contacts using a custom SOQL WHERE filter
       requestBody:
@@ -82,18 +86,25 @@ components:
       properties:
         Id:
           type: string
+          example: 0031t00000A1BcDEZQ9
         FirstName:
           type: string
+          example: John
         LastName:
           type: string
+          example: Doe
         Phone:
           type: string
+          example: "123-456-7890"
         Email:
           type: string
+          example: john.doe@example.com
         CreatedDate:
           type: string
+          example: "2023-07-28T10:30:00Z"
         Message:
           type: string
+          example: Contact fetched successfully
 
     ContactsListResponse:
       type: object
@@ -125,10 +136,14 @@ components:
           example: create
         data:
           type: object
+          required:
+            - FirstName
+            - LastName
+            - Email
           properties:
             Id:
               type: string
-              description: Required for update and delete
+              description: Required for update and delete operations
               example: 0031t00000A1BcDEZQ9
             FirstName:
               type: string
