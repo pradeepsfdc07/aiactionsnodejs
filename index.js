@@ -17,8 +17,10 @@ let contacts = [
 // 🔍 Filter contacts
 app.post("/get-contacts", (req, res) => {
   const { filter } = req.body;
+  console.log("🔍 Received filter request:", filter);
 
   if (!filter || typeof filter !== "string") {
+    console.log("❌ Invalid filter:", filter);
     return res.status(400).json({ error: "Filter is required and must be a string" });
   }
 
@@ -29,6 +31,7 @@ app.post("/get-contacts", (req, res) => {
     c.Email.toLowerCase().includes(lower)
   );
 
+  console.log(`✅ Found ${results.length} matching contacts`);
   res.json({
     count: results.length,
     contacts: results,
@@ -39,13 +42,16 @@ app.post("/get-contacts", (req, res) => {
 // 🔁 Update contact
 app.put("/update-contact", (req, res) => {
   const { Id, FirstName, LastName, Email } = req.body;
+  console.log("🔁 Update request received:", req.body);
 
   if (!Id) {
+    console.log("❌ Missing Id in request");
     return res.status(400).json({ error: "Contact Id is required." });
   }
 
   const contact = contacts.find(c => c.Id === Id);
   if (!contact) {
+    console.log("❌ Contact not found for Id:", Id);
     return res.status(404).json({ error: "Contact not found." });
   }
 
@@ -53,6 +59,7 @@ app.put("/update-contact", (req, res) => {
   if (LastName) contact.LastName = LastName;
   if (Email) contact.Email = Email;
 
+  console.log("✅ Contact updated:", contact);
   res.json({
     message: "Contact updated successfully",
     contact
@@ -62,17 +69,21 @@ app.put("/update-contact", (req, res) => {
 // ❌ Delete contact
 app.delete("/delete-contact", (req, res) => {
   const { Id } = req.body;
+  console.log("🗑️ Delete request received:", Id);
 
   if (!Id) {
+    console.log("❌ Missing Id in delete request");
     return res.status(400).json({ error: "Contact Id is required." });
   }
 
   const index = contacts.findIndex(c => c.Id === Id);
   if (index === -1) {
+    console.log("❌ Contact not found for deletion:", Id);
     return res.status(404).json({ error: "Contact not found." });
   }
 
   const removed = contacts.splice(index, 1);
+  console.log("✅ Contact deleted:", removed[0]);
 
   res.json({
     message: "Contact deleted successfully",
@@ -82,11 +93,13 @@ app.delete("/delete-contact", (req, res) => {
 
 // 📄 Serve plugin manifest
 app.get("/.well-known/ai-plugin.json", (req, res) => {
+  console.log("📄 Serving ai-plugin.json");
   res.sendFile(path.join(__dirname, ".well-known/ai-plugin.json"));
 });
 
 // 📄 Serve OpenAPI
 app.get("/openapi.yaml", (req, res) => {
+  console.log("📄 Serving openapi.yaml");
   res.sendFile(path.join(__dirname, "openapi.yaml"));
 });
 
@@ -94,3 +107,4 @@ app.get("/openapi.yaml", (req, res) => {
 app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
 });
+fdfd
