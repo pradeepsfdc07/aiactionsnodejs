@@ -1,176 +1,25 @@
 openapi: 3.0.1
 info:
-  title: Salesforce Contact API
-  version: 1.0.1
-  description: Use this API to create, update, delete, or query Salesforce contacts using SOQL filters.
+  title: Hello Plugin
+  version: 1.0.0
+  description: A test plugin that returns hello.
 
 servers:
   - url: https://aiactionsnodejs.onrender.com
 
 paths:
-  /contact-action:
-    post:
-      tags:
-        - Contact
-      operationId: performContactAction
-      summary: Create, update, or delete a Salesforce Contact
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ContactActionRequest"
-      responses:
-        "201":
-          description: Operation completed successfully
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/OperationResponse"
-        "400":
-          description: Invalid request
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "500":
-          description: Server error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-
-  /contacts-by-filter:
-    post:
-      tags:
-        - Contact
-      operationId: getContactsUsingFilter
-      summary: Retrieve Salesforce contacts using a custom SOQL WHERE filter
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - filter
-              properties:
-                filter:
-                  type: string
-                  example: "Email LIKE '%gmail.com%'"
-                  description: A valid SOQL WHERE clause to filter contacts
+  /hello:
+    get:
+      operationId: sayHello
+      summary: Returns a hello message
       responses:
         "200":
-          description: Contacts retrieved successfully
+          description: Successful hello response
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ContactsListResponse"
-        "400":
-          description: Invalid or unsafe filter
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "500":
-          description: Server error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-
-components:
-  schemas:
-    ContactResponse:
-      type: object
-      properties:
-        Id:
-          type: string
-          example: 0031t00000A1BcDEZQ9
-        FirstName:
-          type: string
-          example: John
-        LastName:
-          type: string
-          example: Doe
-        Phone:
-          type: string
-          example: "123-456-7890"
-        Email:
-          type: string
-          example: john.doe@example.com
-        CreatedDate:
-          type: string
-          example: "2023-07-28T10:30:00Z"
-        Message:
-          type: string
-          example: Contact fetched successfully
-
-    ContactsListResponse:
-      type: object
-      properties:
-        count:
-          type: integer
-          example: 3
-        contacts:
-          type: array
-          items:
-            $ref: "#/components/schemas/ContactResponse"
-        Message:
-          type: string
-          example: Contacts retrieved using filter: Email LIKE '%gmail.com%'
-
-    ContactActionRequest:
-      type: object
-      required:
-        - tablename
-        - operationtype
-        - data
-      properties:
-        tablename:
-          type: string
-          example: contact
-        operationtype:
-          type: string
-          enum: [create, update, delete]
-          example: create
-        data:
-          type: object
-          required:
-            - FirstName
-            - LastName
-            - Email
-          properties:
-            Id:
-              type: string
-              description: Required for update and delete operations
-              example: 0031t00000A1BcDEZQ9
-            FirstName:
-              type: string
-              example: John
-            LastName:
-              type: string
-              example: Doe
-            Email:
-              type: string
-              example: john.doe@example.com
-            Phone:
-              type: string
-              example: "123-456-7890"
-
-    OperationResponse:
-      type: object
-      properties:
-        Id:
-          type: string
-          example: 0031t00000A1BcDEZQ9
-        Message:
-          type: string
-          example: Contact created successfully
-
-    ErrorResponse:
-      type: object
-      properties:
-        error:
-          type: string
-          example: Invalid SOQL filter or missing fields
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Hello from plugin!

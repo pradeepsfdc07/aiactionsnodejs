@@ -1,15 +1,17 @@
 {
   "schema_version": "v1",
-  "name_for_human": "Salesforce Contact Tool",
-  "name_for_model": "salesforce_contact_tool",
-  "description_for_human": "Create, update, delete, or retrieve Salesforce contacts using filters or email.",
-  "description_for_model": "Use this tool to manage Salesforce Contacts — create, update, delete, or query using SOQL filters or by email.",
-  "auth": { "type": "none" },
+  "name_for_human": "Hello Plugin",
+  "name_for_model": "hello_plugin",
+  "description_for_human": "A simple test plugin",
+  "description_for_model": "Say hello using this test plugin.",
+  "auth": {
+    "type": "none"
+  },
   "api": {
     "type": "openapi",
     "url": "https://aiactionsnodejs.onrender.com/openapi.yaml"
   },
   "logo_url": "https://aiactionsnodejs.onrender.com/logo.png",
-  "contact_email": "you@example.com",
-  "legal_info_url": "https://aiactionsnodejs.onrender.com/legal"
+  "contact_email": "your@email.com",
+  "legal_info_url": "https://example.com/legal"
 }
