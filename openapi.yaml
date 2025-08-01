@@ -2,7 +2,7 @@ openapi: 3.0.1
 info:
   title: Mock Salesforce Contact API
   version: 1.0.0
-  description: Simple API for testing Salesforce contact retrieval and updates
+  description: Simple API for testing Salesforce contact retrieval, updates, and deletion
 
 servers:
   - url: https://aiactionsnodejs.onrender.com
@@ -66,6 +66,42 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
+  /delete-contact:
+    delete:
+      summary: Delete a contact by ID
+      operationId: deleteContact
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - Id
+              properties:
+                Id:
+                  type: string
+                  example: "002"
+      responses:
+        "200":
+          description: Contact deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeleteResponse"
+        "400":
+          description: Invalid request (missing Id)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Contact not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
 components:
   schemas:
     Contact:
@@ -112,6 +148,14 @@ components:
         message:
           type: string
         contact:
+          $ref: "#/components/schemas/Contact"
+
+    DeleteResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        deleted:
           $ref: "#/components/schemas/Contact"
 
     ErrorResponse:

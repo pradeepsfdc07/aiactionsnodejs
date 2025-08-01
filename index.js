@@ -59,6 +59,27 @@ app.put("/update-contact", (req, res) => {
   });
 });
 
+// ❌ Delete contact
+app.delete("/delete-contact", (req, res) => {
+  const { Id } = req.body;
+
+  if (!Id) {
+    return res.status(400).json({ error: "Contact Id is required." });
+  }
+
+  const index = contacts.findIndex(c => c.Id === Id);
+  if (index === -1) {
+    return res.status(404).json({ error: "Contact not found." });
+  }
+
+  const removed = contacts.splice(index, 1);
+
+  res.json({
+    message: "Contact deleted successfully",
+    deleted: removed[0]
+  });
+});
+
 // 📄 Serve plugin manifest
 app.get("/.well-known/ai-plugin.json", (req, res) => {
   res.sendFile(path.join(__dirname, ".well-known/ai-plugin.json"));
@@ -71,5 +92,5 @@ app.get("/openapi.yaml", (req, res) => {
 
 // 🚀 Start
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:$\{PORT}`);
+  console.log(`🚀 Server running on http://localhost:${PORT}`);
 });

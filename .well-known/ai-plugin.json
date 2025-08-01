@@ -2,9 +2,11 @@
   "schema_version": "v1",
   "name_for_human": "Mock Contact Tool",
   "name_for_model": "mock_contact_tool",
-  "description_for_human": "Get and update mock contacts",
-  "description_for_model": "Use this tool to find and update mock contact data.",
-  "auth": { "type": "none" },
+  "description_for_human": "Get, update, and delete mock contacts",
+  "description_for_model": "Use this tool to find, update, or delete mock contact data by ID or filter.",
+  "auth": {
+    "type": "none"
+  },
   "api": {
     "type": "openapi",
     "url": "https://aiactionsnodejs.onrender.com/openapi.yaml"
