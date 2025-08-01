@@ -103,8 +103,8 @@ app.put("/update-record", (req, res) => {
   });
 });
 
-// ❌ Delete record
-app.delete("/delete-record", (req, res) => {
+// ❌ Delete record (changed to POST)
+app.post("/delete-record", (req, res) => {
   const { tablename, Id } = req.body;
   console.log("🗑️ Delete request received:", req.body);
 

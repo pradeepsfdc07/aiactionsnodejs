@@ -97,7 +97,7 @@ paths:
                 $ref: "#/components/schemas/ErrorResponse"
 
   /delete-record:
-    delete:
+    post:  # ✅ Changed from delete to post
       summary: Delete a record by ID
       operationId: deleteRecord
       requestBody:
