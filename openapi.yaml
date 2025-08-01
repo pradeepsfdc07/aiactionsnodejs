@@ -1,25 +1,40 @@
 openapi: 3.0.1
 info:
-  title: Hello Plugin
+  title: Salesforce Contact API (Test)
   version: 1.0.0
-  description: A test plugin that returns hello.
+  description: Returns test contacts from a mock API.
 
 servers:
   - url: https://aiactionsnodejs.onrender.com
 
 paths:
-  /hello:
+  /get-contacts:
     get:
-      operationId: sayHello
-      summary: Returns a hello message
+      operationId: getTestContacts
+      summary: Get mock contact list
       responses:
         "200":
-          description: Successful hello response
+          description: Returns an array of test contacts
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  message:
-                    type: string
-                    example: Hello from plugin!
+                  contacts:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Contact"
+
+components:
+  schemas:
+    Contact:
+      type: object
+      properties:
+        Id:
+          type: string
+        FirstName:
+          type: string
+        LastName:
+          type: string
+        Email:
+          type: string

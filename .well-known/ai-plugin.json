@@ -1,9 +1,9 @@
 {
   "schema_version": "v1",
-  "name_for_human": "Hello Plugin",
-  "name_for_model": "hello_plugin",
-  "description_for_human": "A simple test plugin",
-  "description_for_model": "Say hello using this test plugin.",
+  "name_for_human": "Test Contact Plugin",
+  "name_for_model": "test_contact_plugin",
+  "description_for_human": "Retrieve mock contacts",
+  "description_for_model": "Use this to retrieve a list of mock Salesforce contacts.",
   "auth": {
     "type": "none"
   },
@@ -12,6 +12,6 @@
     "url": "https://aiactionsnodejs.onrender.com/openapi.yaml"
   },
   "logo_url": "https://aiactionsnodejs.onrender.com/logo.png",
-  "contact_email": "your@email.com",
+  "contact_email": "support@example.com",
   "legal_info_url": "https://example.com/legal"
 }
