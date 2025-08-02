@@ -84,7 +84,7 @@ app.post("/add-record", (req, res) => {
 app.post("/get-records", async (req, res) => {
   const { tablename, filter } = req.body;
 
-  if (tablename === "salesforce") {
+  if (tablename === "contact") {
     try {
       const sfRecords = await getSalesforceContacts();
 
