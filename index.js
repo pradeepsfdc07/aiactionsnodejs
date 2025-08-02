@@ -292,16 +292,16 @@ app.post("/delete-record", async (req, res) => {
   if (!table) return res.status(400).json({ error: `Invalid tablename: ${tablename}` });
 
   const index = table.findIndex(r => r.Id === Id);
-  if (index === -1) return res.status(404).json({ error: `${tablename} record not found.` });
+  //if (index === -1) return res.status(404).json({ error: `${tablename} record not found.` });
 
-  const removed = table.splice(index, 1);
-  console.log("🧹 Record deleted:", removed[0]);
+  //const removed = table.splice(index, 1);
+  //console.log("🧹 Record deleted:", removed[0]);
 
   let deleteSalesforceContactresp = await deleteSalesforceContact(req.body);
  console.log("✅ deleteSalesforceContactresp:", deleteSalesforceContactresp);
 
 
-  res.json({ message: `${tablename} record deleted successfully`, deleted: removed[0] });
+  res.json({ message: `${tablename} record deleted successfully` });
 });
 
 // 📧 POST /send-email
