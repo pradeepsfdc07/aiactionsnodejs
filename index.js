@@ -2,6 +2,7 @@
 const express = require("express");
 const path = require("path");
 const nodemailer = require("nodemailer");
+const axios = require("axios");
 require("dotenv").config();
 
 const app = express();
@@ -26,6 +27,45 @@ function getTable(tablename) {
   return tables[tablename];
 }
 
+// 🔐 Salesforce Auth
+async function getAccessToken() {
+  const params = new URLSearchParams({
+    grant_type: "password",
+    client_id: process.env.SF_CLIENT_ID,
+    client_secret: process.env.SF_CLIENT_SECRET,
+    username: process.env.SF_USERNAME,
+    password: process.env.SF_PASSWORD + process.env.SF_SECURITY_TOKEN
+  });
+
+  const response = await axios.post(`${process.env.SF_LOGIN_URL}/services/oauth2/token`, params);
+  return response.data;
+}
+
+async function getSalesforceContacts() {
+  const { access_token, instance_url } = await getAccessToken();
+
+  const response = await axios.get(`${instance_url}/services/data/v58.0/query`, {
+    headers: { Authorization: `Bearer ${access_token}` },
+    params: {
+      q: "SELECT Id, FirstName, LastName, Email FROM Contact LIMIT 10"
+    }
+  });
+
+  return response.data.records;
+}
+
+// 🆕 NEW: Fetch contacts from Salesforce
+app.get("/fetch-salesforce-contacts", async (req, res) => {
+  try {
+    const records = await getSalesforceContacts();
+    res.json({ message: "Salesforce contacts retrieved", count: records.length, records });
+  } catch (err) {
+    console.error("❌ Salesforce Fetch Error:", err?.response?.data || err.message);
+    res.status(500).json({ error: "Failed to fetch contacts from Salesforce" });
+  }
+});
+
+
 // ➕ Add record
 app.post("/add-record", (req, res) => {
   const { tablename, FirstName, LastName, Email } = req.body;
@@ -41,9 +81,33 @@ app.post("/add-record", (req, res) => {
   res.status(201).json({ message: `${tablename} record added successfully`, record: newRecord });
 });
 
-// 🔍 Filter records
-app.post("/get-records", (req, res) => {
+app.post("/get-records", async (req, res) => {
   const { tablename, filter } = req.body;
+
+  if (tablename === "salesforce") {
+    try {
+      const sfRecords = await getSalesforceContacts();
+
+      // Filter if `filter` is provided
+      const filtered = filter
+        ? sfRecords.filter(r =>
+            (r.FirstName || "").toLowerCase().includes(filter.toLowerCase()) ||
+            (r.LastName || "").toLowerCase().includes(filter.toLowerCase()) ||
+            (r.Email || "").toLowerCase().includes(filter.toLowerCase())
+          )
+        : sfRecords;
+
+      return res.json({
+        count: filtered.length,
+        records: filtered,
+        message: `Salesforce records retrieved`
+      });
+    } catch (err) {
+      console.error("❌ Salesforce Fetch Error:", err?.response?.data || err.message);
+      return res.status(500).json({ error: "Failed to fetch Salesforce records" });
+    }
+  }
+    // Else: Handle mock tables
   const table = getTable(tablename);
   if (!table) return res.status(400).json({ error: `Invalid tablename: ${tablename}` });
   if (!filter || typeof filter !== "string")
