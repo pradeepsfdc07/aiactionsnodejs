@@ -285,7 +285,7 @@ app.put("/update-record", async (req, res) => {
 });
 
 // ❌ POST /delete-record
-app.post("/delete-record", (req, res) => {
+app.post("/delete-record", async (req, res) => {
   const { tablename, Id } = req.body;
   console.log("🗑️ Delete request:", req.body);
   const table = getTable(tablename);
