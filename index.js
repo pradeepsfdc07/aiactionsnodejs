@@ -265,8 +265,7 @@ app.put("/update-record", async (req, res) => {
   if (!table) return res.status(400).json({ error: `Invalid tablename: ${tablename}` });
 
   const record = table.find(r => r.Id === Id);
-  if (!record) return res.status(404).json({ error: `${tablename} record not found.` });
-
+  
   if (FirstName) record.FirstName = FirstName;
   if (LastName) record.LastName = LastName;
   if (Email) record.Email = Email;
@@ -280,7 +279,6 @@ app.put("/update-record", async (req, res) => {
 
     res.json({
       message: "Salesforce contact updated successfully",
-      result
     });
 
   res.json({ message: `${tablename} record updated successfully`, record });
