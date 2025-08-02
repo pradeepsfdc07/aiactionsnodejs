@@ -42,17 +42,30 @@ async function getAccessToken() {
 }
 
 async function getSalesforceContacts() {
-  const { access_token, instance_url } = await getAccessToken();
+  try {
+    const conn = new jsforce.Connection({
+      loginUrl: process.env.SF_LOGIN_URL
+    });
 
-  const response = await axios.get(`${instance_url}/services/data/v58.0/query`, {
-    headers: { Authorization: `Bearer ${access_token}` },
-    params: {
-      q: "SELECT Id, FirstName, LastName, Email FROM Contact LIMIT 10"
-    }
-  });
+    await conn.login(
+      process.env.SF_USERNAME,
+      process.env.SF_PASSWORD + process.env.SF_TOKEN
+    );
 
-  return response.data.records;
+    console.log("✅ Logged into Salesforce");
+
+    const records = await conn
+      .sobject("Contact")
+      .find({}, { Id: 1, FirstName: 1, LastName: 1, Email: 1 })
+      .limit(10)
+      .execute();
+
+    console.log("📦 Contacts:", records);
+  } catch (err) {
+    console.error("❌ Error:", err);
+  }
 }
+
 
 // 🆕 NEW: Fetch contacts from Salesforce
 app.get("/fetch-salesforce-contacts", async (req, res) => {
