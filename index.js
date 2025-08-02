@@ -45,6 +45,11 @@ async function getSalesforceContacts(methodprops) {
     console.log("🌐 Calling Apex REST:", url);
 
     const records = await conn.requestGet(url);
+    if (Array.isArray(records)) {
+  console.log(`✅ Got ${records.length} records from Apex REST`);
+} else {
+  console.error("❌ Expected an array but got:", typeof records);
+}
     console.log(records);
     console.log(`📦 Retrieved ${records.length} contact(s) from Apex REST`);
 
