@@ -45,6 +45,7 @@ async function getSalesforceContacts(methodprops) {
     console.log("🌐 Calling Apex REST:", url);
 
     const records = await conn.requestGet(url);
+    console.log(records);
     console.log(`📦 Retrieved ${records.length} contact(s) from Apex REST`);
 
     return records;
