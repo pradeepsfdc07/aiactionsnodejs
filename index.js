@@ -28,7 +28,8 @@ function getTable(tablename) {
 }
 
 // 🔐 Salesforce Contact Fetch (no client_id needed)
-async function getSalesforceContacts(filter = "") {
+async function getSalesforceContacts(methodprops) {
+  let {tablename, filter}= methodprops;
   try {
     console.log("🔐 Logging into Salesforce...");
     const conn = new jsforce.Connection({ loginUrl: process.env.SF_LOGIN_URL });
@@ -90,7 +91,7 @@ app.post("/get-records", async (req, res) => {
 
   if (tablename === "contact") {
     try {
-      const sfRecords = await getSalesforceContacts();
+      const sfRecords = await getSalesforceContacts({tablename:tablename, filter:filter});
 
       const filtered = filter
         ? sfRecords.filter(r =>
