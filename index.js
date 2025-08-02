@@ -264,13 +264,13 @@ app.put("/update-record", async (req, res) => {
   const table = getTable(tablename);
   if (!table) return res.status(400).json({ error: `Invalid tablename: ${tablename}` });
 
-  const record = table.find(r => r.Id === Id);
+ // const record = table.find(r => r.Id === Id);
   
-  if (FirstName) record.FirstName = FirstName;
-  if (LastName) record.LastName = LastName;
-  if (Email) record.Email = Email;
+ // if (FirstName) record.FirstName = FirstName;
+ // if (LastName) record.LastName = LastName;
+ // if (Email) record.Email = Email;
 
-  console.log("✅ Record updated:", record);
+ // console.log("✅ Record updated:", record);
 
 
    let updateSalesforceContactresp = await updateSalesforceContact(req.body);
@@ -291,7 +291,7 @@ app.post("/delete-record", async (req, res) => {
   const table = getTable(tablename);
   if (!table) return res.status(400).json({ error: `Invalid tablename: ${tablename}` });
 
-  const index = table.findIndex(r => r.Id === Id);
+ // const index = table.findIndex(r => r.Id === Id);
   //if (index === -1) return res.status(404).json({ error: `${tablename} record not found.` });
 
   //const removed = table.splice(index, 1);
