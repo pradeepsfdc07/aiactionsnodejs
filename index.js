@@ -28,7 +28,7 @@ function getTable(tablename) {
 }
 
 // 🔐 Salesforce Contact Fetch (no client_id needed)
-async function getSalesforceContacts() {
+async function getSalesforceContacts(filter = "") {
   try {
     console.log("🔐 Logging into Salesforce...");
     const conn = new jsforce.Connection({ loginUrl: process.env.SF_LOGIN_URL });
@@ -40,19 +40,20 @@ async function getSalesforceContacts() {
 
     console.log("✅ Logged into Salesforce");
 
-    const records = await conn
-      .sobject("Contact")
-      .find({}, { Id: 1, FirstName: 1, LastName: 1, Email: 1 })
-      .limit(10)
-      .execute();
+    const url = `/services/apexrest/MultiObjectAPI?tablename=contact&filter=${encodeURIComponent(filter)}`;
+    console.log("🌐 Calling Apex REST:", url);
 
-    console.log(`📦 Retrieved ${records.length} contact(s)`);
+    const records = await conn.requestGet(url);
+    console.log(`📦 Retrieved ${records.length} contact(s) from Apex REST`);
+
     return records;
   } catch (err) {
-    console.error("❌ Salesforce Login or Query Failed:", err.message);
+    console.error("❌ Apex REST call failed:", err.message);
     throw err;
   }
 }
+
+
 
 // 🆕 GET /fetch-salesforce-contacts
 app.get("/fetch-salesforce-contacts", async (req, res) => {
@@ -142,6 +143,13 @@ app.put("/update-record", (req, res) => {
   if (Email) record.Email = Email;
 
   console.log("✅ Record updated:", record);
+
+
+    res.json({
+      message: "Salesforce contact updated successfully",
+      result
+    });
+
   res.json({ message: `${tablename} record updated successfully`, record });
 });
 
