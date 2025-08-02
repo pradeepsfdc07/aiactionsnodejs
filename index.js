@@ -48,7 +48,9 @@ async function getSalesforceContacts(methodprops) {
     if (Array.isArray(records)) {
   console.log(`✅ Got ${records.length} records from Apex REST`);
 } else {
-  console.error("❌ Expected an array but got:", typeof records);
+  console.log("❌ Expected an array but got:", typeof records);
+  let recarr = JSON.parse(records);
+  console.log(recarr);
 }
     console.log(records);
     console.log(`📦 Retrieved ${records.length} contact(s) from Apex REST`);
