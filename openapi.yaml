@@ -1,8 +1,8 @@
-openapi: 3.1.0
+openapi: 3.0.1
 info:
-  title: Mock Salesforce Object API Gateway
-  version: 1.0.1
-  description: Node.js gateway that routes object-based requests to Salesforce Apex REST methods using the `MultiObjectAPI` class.
+  title: Mock Salesforce Object API
+  version: 1.0.0
+  description: Simple API for testing Salesforce-style object operations with dynamic tablename
 
 servers:
   - url: https://aiactionsnodejs.onrender.com
@@ -10,22 +10,24 @@ servers:
 paths:
   /get-records:
     post:
-      summary: Get records by text filter from Salesforce
-      operationId: fetchRecordsFromSalesforce
+      summary: Get records by text filter
+      operationId: getRecords
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
-              required: [tablename, filter]
+              required:
+                - tablename
+                - filter
               properties:
                 tablename:
                   type: string
-                  example: contact
+                  example: "contact"
                 filter:
                   type: string
-                  example: john
+                  example: "john"
       responses:
         "200":
           description: List of matching records
@@ -42,28 +44,14 @@ paths:
 
   /add-record:
     post:
-      summary: Add a new record to Salesforce
-      operationId: createSalesforceRecord
+      summary: Add a new record
+      operationId: addRecord
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
-              required: [tablename, FirstName, LastName, Email, action]
-              properties:
-                tablename:
-                  type: string
-                  example: lead
-                FirstName:
-                  type: string
-                LastName:
-                  type: string
-                Email:
-                  type: string
-                action:
-                  type: string
-                  example: add
+              $ref: "#/components/schemas/AddRecordRequest"
       responses:
         "201":
           description: Record added successfully
@@ -79,30 +67,15 @@ paths:
                 $ref: "#/components/schemas/ErrorResponse"
 
   /update-record:
-    post:
-      summary: Update a record in Salesforce
-      operationId: updateSalesforceRecord
+    put:
+      summary: Update a record by ID
+      operationId: updateRecord
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
-              required: [tablename, Id, action]
-              properties:
-                tablename:
-                  type: string
-                Id:
-                  type: string
-                FirstName:
-                  type: string
-                LastName:
-                  type: string
-                Email:
-                  type: string
-                action:
-                  type: string
-                  example: update
+              $ref: "#/components/schemas/UpdateRecordRequest"
       responses:
         "200":
           description: Record updated
@@ -124,26 +97,25 @@ paths:
                 $ref: "#/components/schemas/ErrorResponse"
 
   /delete-record:
-    post:
-      summary: Delete a record in Salesforce
-      operationId: deleteSalesforceRecord
+    post:  # ✅ POST instead of DELETE
+      summary: Delete a record by ID
+      operationId: deleteRecord
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
-              required: [tablename, Id, action]
+              required:
+                - tablename
+                - Id
               properties:
                 tablename:
                   type: string
-                  example: contact
+                  example: "contact"
                 Id:
                   type: string
-                  example: 002
-                action:
-                  type: string
-                  example: delete
+                  example: "002"
       responses:
         "200":
           description: Record deleted successfully
@@ -152,7 +124,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/DeleteResponse"
         "400":
-          description: Invalid request
+          description: Invalid request (missing Id or tablename)
           content:
             application/json:
               schema:
@@ -166,29 +138,29 @@ paths:
 
   /send-email:
     post:
-      summary: Send an email using Salesforce Apex
-      operationId: sendSalesforceEmail
+      summary: Send an email using configured SMTP
+      operationId: sendEmail
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
-              required: [to, subject, text, action]
+              required:
+                - to
+                - subject
+                - text
               properties:
                 to:
                   type: string
                   format: email
-                  example: recipient@example.com
+                  example: "recipient@example.com"
                 subject:
                   type: string
-                  example: Test Email
+                  example: "Test Email"
                 text:
                   type: string
-                  example: This is a test email from the mock API server.
-                action:
-                  type: string
-                  example: email
+                  example: "This is a test email from the mock API server."
       responses:
         "200":
           description: Email sent successfully
@@ -240,6 +212,24 @@ components:
         message:
           type: string
 
+    AddRecordRequest:
+      type: object
+      required:
+        - tablename
+        - FirstName
+        - LastName
+        - Email
+      properties:
+        tablename:
+          type: string
+          example: "lead"
+        FirstName:
+          type: string
+        LastName:
+          type: string
+        Email:
+          type: string
+
     AddResponse:
       type: object
       properties:
@@ -247,6 +237,23 @@ components:
           type: string
         record:
           $ref: "#/components/schemas/Record"
+
+    UpdateRecordRequest:
+      type: object
+      required:
+        - tablename
+        - Id
+      properties:
+        tablename:
+          type: string
+        Id:
+          type: string
+        FirstName:
+          type: string
+        LastName:
+          type: string
+        Email:
+          type: string
 
     UpdateResponse:
       type: object

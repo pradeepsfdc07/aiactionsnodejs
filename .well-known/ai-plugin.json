@@ -2,8 +2,8 @@
   "schema_version": "v1",
   "name_for_human": "Mock CRM Tool",
   "name_for_model": "mock_crm_tool",
-  "description_for_human": "Add, get, update, delete CRM records using Salesforce, or send test emails.",
-  "description_for_model": "Plugin for managing CRM-style records (contact, account, lead) through Salesforce Apex REST. Use POST /add-record to create, POST /update-record to update, POST /delete-record to delete, POST /get-records to retrieve records, and POST /send-email to send test emails. All operations require 'tablename'. Use 'action' key to specify the operation when needed.",
+  "description_for_human": "Get, add, update, delete CRM records, and send test emails.",
+  "description_for_model": "Use this tool to get, create, update, or delete mock CRM records dynamically from tables like contact, account, or lead. Also supports sending email via the '/send-email' endpoint. Pass 'tablename' and optionally 'Id' or 'filter' in the request.",
   "auth": {
     "type": "none"
   },
