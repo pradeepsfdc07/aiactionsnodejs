@@ -102,6 +102,80 @@ async function addSalesforceContact(methodprops) {
   }
 }
 
+async function updateSalesforceContact(methodprops) {
+  const { FirstName, LastName, Email, tablename = "contact" } = methodprops;
+
+  try {
+    console.log("🔐 Logging into Salesforce...");
+    const conn = new jsforce.Connection({ loginUrl: process.env.SF_LOGIN_URL });
+
+    await conn.login(
+      process.env.SF_USERNAME,
+      process.env.SF_PASSWORD + process.env.SF_TOKEN
+    );
+
+    console.log("✅ Logged into Salesforce");
+
+    const url = `/services/apexrest/MultiObjectAPI`;
+
+    const body = {
+      action: "update",
+      tablename,
+      FirstName,
+      LastName,
+      Email
+    };
+
+    console.log("📤 Sending POST to Apex REST:", url);
+    console.log("📦 Payload:", body);
+
+    const response = await conn.requestPost(url, body);
+
+    console.log("✅ Contact added. Response:", response);
+    return response;
+  } catch (err) {
+    console.error("❌ Failed to add contact:", err.message);
+    throw err;
+  }
+}
+
+
+async function deleteSalesforceContact(methodprops) {
+  const { FirstName, LastName, Email, tablename = "contact" } = methodprops;
+
+  try {
+    console.log("🔐 Logging into Salesforce...");
+    const conn = new jsforce.Connection({ loginUrl: process.env.SF_LOGIN_URL });
+
+    await conn.login(
+      process.env.SF_USERNAME,
+      process.env.SF_PASSWORD + process.env.SF_TOKEN
+    );
+
+    console.log("✅ Logged into Salesforce");
+
+    const url = `/services/apexrest/MultiObjectAPI`;
+
+    const body = {
+      action: "delete",
+      tablename,
+      FirstName,
+      LastName,
+      Email
+    };
+
+    console.log("📤 Sending POST to Apex REST:", url);
+    console.log("📦 Payload:", body);
+
+    const response = await conn.requestPost(url, body);
+
+    console.log("✅ Contact added. Response:", response);
+    return response;
+  } catch (err) {
+    console.error("❌ Failed to add contact:", err.message);
+    throw err;
+  }
+}
 
 
 // 🆕 GET /fetch-salesforce-contacts
@@ -182,7 +256,7 @@ app.post("/get-records", async (req, res) => {
 });
 
 // 🔁 PUT /update-record
-app.put("/update-record", (req, res) => {
+app.put("/update-record", async (req, res) => {
   const { tablename, Id, FirstName, LastName, Email } = req.body;
   console.log("✏️ Update record:", req.body);
   const table = getTable(tablename);
@@ -196,6 +270,10 @@ app.put("/update-record", (req, res) => {
   if (Email) record.Email = Email;
 
   console.log("✅ Record updated:", record);
+
+
+   let updateSalesforceContactresp = await updateSalesforceContact(req.body);
+ console.log("✅ updateSalesforceContactresp:", updateSalesforceContactresp);
 
 
     res.json({
@@ -218,6 +296,11 @@ app.post("/delete-record", (req, res) => {
 
   const removed = table.splice(index, 1);
   console.log("🧹 Record deleted:", removed[0]);
+
+  let deleteSalesforceContactresp = await deleteSalesforceContact(req.body);
+ console.log("✅ deleteSalesforceContactresp:", deleteSalesforceContactresp);
+
+
   res.json({ message: `${tablename} record deleted successfully`, deleted: removed[0] });
 });
 
