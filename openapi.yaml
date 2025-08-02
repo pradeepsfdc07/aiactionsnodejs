@@ -22,10 +22,10 @@ paths:
               properties:
                 tablename:
                   type: string
-                  example: "contact"
+                  example: contact
                 filter:
                   type: string
-                  example: "john"
+                  example: john
       responses:
         "200":
           description: List of matching records
@@ -54,7 +54,7 @@ paths:
               properties:
                 tablename:
                   type: string
-                  example: "lead"
+                  example: lead
                 FirstName:
                   type: string
                 LastName:
@@ -63,7 +63,7 @@ paths:
                   type: string
                 action:
                   type: string
-                  example: "add"
+                  example: add
       responses:
         "201":
           description: Record added successfully
@@ -102,7 +102,7 @@ paths:
                   type: string
                 action:
                   type: string
-                  example: "update"
+                  example: update
       responses:
         "200":
           description: Record updated
@@ -137,13 +137,13 @@ paths:
               properties:
                 tablename:
                   type: string
-                  example: "contact"
+                  example: contact
                 Id:
                   type: string
-                  example: "002"
+                  example: 002
                 action:
                   type: string
-                  example: "delete"
+                  example: delete
       responses:
         "200":
           description: Record deleted successfully
@@ -179,16 +179,16 @@ paths:
                 to:
                   type: string
                   format: email
-                  example: "recipient@example.com"
+                  example: recipient@example.com
                 subject:
                   type: string
-                  example: "Test Email"
+                  example: Test Email
                 text:
                   type: string
-                  example: "This is a test email from the mock API server."
+                  example: This is a test email from the mock API server.
                 action:
                   type: string
-                  example: "email"
+                  example: email
       responses:
         "200":
           description: Email sent successfully
