@@ -1,4 +1,4 @@
-openapi: 3.0.1
+openapi: 3.1.0
 info:
   title: Mock Salesforce Object API Gateway
   version: 1.0.1
@@ -18,9 +18,7 @@ paths:
           application/json:
             schema:
               type: object
-              required:
-                - tablename
-                - filter
+              required: [tablename, filter]
               properties:
                 tablename:
                   type: string
@@ -34,13 +32,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/RecordsResponse"
+                $ref: "#/$defs/RecordsResponse"
         "400":
           description: Missing or invalid input
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: "#/$defs/ErrorResponse"
 
   /add-record:
     post:
@@ -51,26 +49,34 @@ paths:
         content:
           application/json:
             schema:
-              allOf:
-                - $ref: "#/components/schemas/AddRecordRequest"
-                - type: object
-                  properties:
-                    action:
-                      type: string
-                      example: "add"
+              type: object
+              required: [tablename, FirstName, LastName, Email, action]
+              properties:
+                tablename:
+                  type: string
+                  example: "lead"
+                FirstName:
+                  type: string
+                LastName:
+                  type: string
+                Email:
+                  type: string
+                action:
+                  type: string
+                  example: "add"
       responses:
         "201":
           description: Record added successfully
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/AddResponse"
+                $ref: "#/$defs/AddResponse"
         "400":
           description: Missing fields
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: "#/$defs/ErrorResponse"
 
   /update-record:
     post:
@@ -81,32 +87,41 @@ paths:
         content:
           application/json:
             schema:
-              allOf:
-                - $ref: "#/components/schemas/UpdateRecordRequest"
-                - type: object
-                  properties:
-                    action:
-                      type: string
-                      example: "update"
+              type: object
+              required: [tablename, Id, action]
+              properties:
+                tablename:
+                  type: string
+                Id:
+                  type: string
+                FirstName:
+                  type: string
+                LastName:
+                  type: string
+                Email:
+                  type: string
+                action:
+                  type: string
+                  example: "update"
       responses:
         "200":
           description: Record updated
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UpdateResponse"
+                $ref: "#/$defs/UpdateResponse"
         "400":
           description: Invalid request
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: "#/$defs/ErrorResponse"
         "404":
           description: Record not found
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: "#/$defs/ErrorResponse"
 
   /delete-record:
     post:
@@ -118,9 +133,7 @@ paths:
           application/json:
             schema:
               type: object
-              required:
-                - tablename
-                - Id
+              required: [tablename, Id, action]
               properties:
                 tablename:
                   type: string
@@ -137,19 +150,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/DeleteResponse"
+                $ref: "#/$defs/DeleteResponse"
         "400":
           description: Invalid request
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: "#/$defs/ErrorResponse"
         "404":
           description: Record not found
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: "#/$defs/ErrorResponse"
 
   /send-email:
     post:
@@ -161,10 +174,7 @@ paths:
           application/json:
             schema:
               type: object
-              required:
-                - to
-                - subject
-                - text
+              required: [to, subject, text, action]
               properties:
                 to:
                   type: string
@@ -196,101 +206,65 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: "#/$defs/ErrorResponse"
         "500":
           description: Server error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: "#/$defs/ErrorResponse"
 
-components:
-  schemas:
-    Record:
-      type: object
-      properties:
-        Id:
-          type: string
-        FirstName:
-          type: string
-        LastName:
-          type: string
-        Email:
-          type: string
+$defs:
+  Record:
+    type: object
+    properties:
+      Id:
+        type: string
+      FirstName:
+        type: string
+      LastName:
+        type: string
+      Email:
+        type: string
 
-    RecordsResponse:
-      type: object
-      properties:
-        count:
-          type: integer
-        records:
-          type: array
-          items:
-            $ref: "#/components/schemas/Record"
-        message:
-          type: string
+  RecordsResponse:
+    type: object
+    properties:
+      count:
+        type: integer
+      records:
+        type: array
+        items:
+          $ref: "#/$defs/Record"
+      message:
+        type: string
 
-    AddRecordRequest:
-      type: object
-      required:
-        - tablename
-        - FirstName
-        - LastName
-        - Email
-      properties:
-        tablename:
-          type: string
-          example: "lead"
-        FirstName:
-          type: string
-        LastName:
-          type: string
-        Email:
-          type: string
+  AddResponse:
+    type: object
+    properties:
+      message:
+        type: string
+      record:
+        $ref: "#/$defs/Record"
 
-    AddResponse:
-      type: object
-      properties:
-        message:
-          type: string
-        record:
-          $ref: "#/components/schemas/Record"
+  UpdateResponse:
+    type: object
+    properties:
+      message:
+        type: string
+      record:
+        $ref: "#/$defs/Record"
 
-    UpdateRecordRequest:
-      type: object
-      required:
-        - tablename
-        - Id
-      properties:
-        tablename:
-          type: string
-        Id:
-          type: string
-        FirstName:
-          type: string
-        LastName:
-          type: string
-        Email:
-          type: string
+  DeleteResponse:
+    type: object
+    properties:
+      message:
+        type: string
+      deleted:
+        $ref: "#/$defs/Record"
 
-    UpdateResponse:
-      type: object
-      properties:
-        message:
-          type: string
-        record:
-          $ref: "#/components/schemas/Record"
-
-    DeleteResponse:
-      type: object
-      properties:
-        message:
-          type: string
-        deleted:
-          $ref: "#/components/schemas/Record"
-
-    ErrorResponse:
-      type: object
-      properties:
-        error:
-          type: string
+  ErrorResponse:
+    type: object
+    properties:
+      error:
+        type: string
