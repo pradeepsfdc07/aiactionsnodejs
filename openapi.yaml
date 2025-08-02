@@ -1,8 +1,8 @@
 openapi: 3.0.1
 info:
-  title: Mock Salesforce Object API
-  version: 1.0.0
-  description: Simple API for testing Salesforce-style object operations with dynamic tablename
+  title: Mock Salesforce Object API Gateway
+  version: 1.0.1
+  description: Node.js gateway that routes object-based requests to Salesforce Apex REST methods using the `MultiObjectAPI` class.
 
 servers:
   - url: https://aiactionsnodejs.onrender.com
@@ -10,8 +10,8 @@ servers:
 paths:
   /get-records:
     post:
-      summary: Get records by text filter
-      operationId: getRecords
+      summary: Get records by text filter from Salesforce
+      operationId: fetchRecordsFromSalesforce
       requestBody:
         required: true
         content:
@@ -44,14 +44,20 @@ paths:
 
   /add-record:
     post:
-      summary: Add a new record
-      operationId: addRecord
+      summary: Add a new record to Salesforce
+      operationId: createSalesforceRecord
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/AddRecordRequest"
+              allOf:
+                - $ref: "#/components/schemas/AddRecordRequest"
+                - type: object
+                  properties:
+                    action:
+                      type: string
+                      example: "add"
       responses:
         "201":
           description: Record added successfully
@@ -67,15 +73,21 @@ paths:
                 $ref: "#/components/schemas/ErrorResponse"
 
   /update-record:
-    put:
-      summary: Update a record by ID
-      operationId: updateRecord
+    post:
+      summary: Update a record in Salesforce
+      operationId: updateSalesforceRecord
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/UpdateRecordRequest"
+              allOf:
+                - $ref: "#/components/schemas/UpdateRecordRequest"
+                - type: object
+                  properties:
+                    action:
+                      type: string
+                      example: "update"
       responses:
         "200":
           description: Record updated
@@ -97,9 +109,9 @@ paths:
                 $ref: "#/components/schemas/ErrorResponse"
 
   /delete-record:
-    post:  # ✅ POST instead of DELETE
-      summary: Delete a record by ID
-      operationId: deleteRecord
+    post:
+      summary: Delete a record in Salesforce
+      operationId: deleteSalesforceRecord
       requestBody:
         required: true
         content:
@@ -116,6 +128,9 @@ paths:
                 Id:
                   type: string
                   example: "002"
+                action:
+                  type: string
+                  example: "delete"
       responses:
         "200":
           description: Record deleted successfully
@@ -124,7 +139,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/DeleteResponse"
         "400":
-          description: Invalid request (missing Id or tablename)
+          description: Invalid request
           content:
             application/json:
               schema:
@@ -138,8 +153,8 @@ paths:
 
   /send-email:
     post:
-      summary: Send an email using configured SMTP
-      operationId: sendEmail
+      summary: Send an email using Salesforce Apex
+      operationId: sendSalesforceEmail
       requestBody:
         required: true
         content:
@@ -161,6 +176,9 @@ paths:
                 text:
                   type: string
                   example: "This is a test email from the mock API server."
+                action:
+                  type: string
+                  example: "email"
       responses:
         "200":
           description: Email sent successfully
