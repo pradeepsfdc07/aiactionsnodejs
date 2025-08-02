@@ -32,13 +32,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/$defs/RecordsResponse"
+                $ref: "#/components/schemas/RecordsResponse"
         "400":
           description: Missing or invalid input
           content:
             application/json:
               schema:
-                $ref: "#/$defs/ErrorResponse"
+                $ref: "#/components/schemas/ErrorResponse"
 
   /add-record:
     post:
@@ -70,13 +70,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/$defs/AddResponse"
+                $ref: "#/components/schemas/AddResponse"
         "400":
           description: Missing fields
           content:
             application/json:
               schema:
-                $ref: "#/$defs/ErrorResponse"
+                $ref: "#/components/schemas/ErrorResponse"
 
   /update-record:
     post:
@@ -109,19 +109,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/$defs/UpdateResponse"
+                $ref: "#/components/schemas/UpdateResponse"
         "400":
           description: Invalid request
           content:
             application/json:
               schema:
-                $ref: "#/$defs/ErrorResponse"
+                $ref: "#/components/schemas/ErrorResponse"
         "404":
           description: Record not found
           content:
             application/json:
               schema:
-                $ref: "#/$defs/ErrorResponse"
+                $ref: "#/components/schemas/ErrorResponse"
 
   /delete-record:
     post:
@@ -150,19 +150,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/$defs/DeleteResponse"
+                $ref: "#/components/schemas/DeleteResponse"
         "400":
           description: Invalid request
           content:
             application/json:
               schema:
-                $ref: "#/$defs/ErrorResponse"
+                $ref: "#/components/schemas/ErrorResponse"
         "404":
           description: Record not found
           content:
             application/json:
               schema:
-                $ref: "#/$defs/ErrorResponse"
+                $ref: "#/components/schemas/ErrorResponse"
 
   /send-email:
     post:
@@ -206,65 +206,66 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/$defs/ErrorResponse"
+                $ref: "#/components/schemas/ErrorResponse"
         "500":
           description: Server error
           content:
             application/json:
               schema:
-                $ref: "#/$defs/ErrorResponse"
+                $ref: "#/components/schemas/ErrorResponse"
 
-$defs:
-  Record:
-    type: object
-    properties:
-      Id:
-        type: string
-      FirstName:
-        type: string
-      LastName:
-        type: string
-      Email:
-        type: string
+components:
+  schemas:
+    Record:
+      type: object
+      properties:
+        Id:
+          type: string
+        FirstName:
+          type: string
+        LastName:
+          type: string
+        Email:
+          type: string
 
-  RecordsResponse:
-    type: object
-    properties:
-      count:
-        type: integer
-      records:
-        type: array
-        items:
-          $ref: "#/$defs/Record"
-      message:
-        type: string
+    RecordsResponse:
+      type: object
+      properties:
+        count:
+          type: integer
+        records:
+          type: array
+          items:
+            $ref: "#/components/schemas/Record"
+        message:
+          type: string
 
-  AddResponse:
-    type: object
-    properties:
-      message:
-        type: string
-      record:
-        $ref: "#/$defs/Record"
+    AddResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        record:
+          $ref: "#/components/schemas/Record"
 
-  UpdateResponse:
-    type: object
-    properties:
-      message:
-        type: string
-      record:
-        $ref: "#/$defs/Record"
+    UpdateResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        record:
+          $ref: "#/components/schemas/Record"
 
-  DeleteResponse:
-    type: object
-    properties:
-      message:
-        type: string
-      deleted:
-        $ref: "#/$defs/Record"
+    DeleteResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        deleted:
+          $ref: "#/components/schemas/Record"
 
-  ErrorResponse:
-    type: object
-    properties:
-      error:
-        type: string
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
