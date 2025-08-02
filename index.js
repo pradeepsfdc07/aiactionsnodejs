@@ -65,6 +65,45 @@ async function getSalesforceContacts(methodprops) {
 
 
 
+async function addSalesforceContact(methodprops) {
+  const { FirstName, LastName, Email, tablename = "contact" } = methodprops;
+
+  try {
+    console.log("🔐 Logging into Salesforce...");
+    const conn = new jsforce.Connection({ loginUrl: process.env.SF_LOGIN_URL });
+
+    await conn.login(
+      process.env.SF_USERNAME,
+      process.env.SF_PASSWORD + process.env.SF_TOKEN
+    );
+
+    console.log("✅ Logged into Salesforce");
+
+    const url = `/services/apexrest/MultiObjectAPI`;
+
+    const body = {
+      action: "add",
+      tablename,
+      FirstName,
+      LastName,
+      Email
+    };
+
+    console.log("📤 Sending POST to Apex REST:", url);
+    console.log("📦 Payload:", body);
+
+    const response = await conn.requestPost(url, body);
+
+    console.log("✅ Contact added. Response:", response);
+    return response;
+  } catch (err) {
+    console.error("❌ Failed to add contact:", err.message);
+    throw err;
+  }
+}
+
+
+
 // 🆕 GET /fetch-salesforce-contacts
 app.get("/fetch-salesforce-contacts", async (req, res) => {
   try {
@@ -77,7 +116,7 @@ app.get("/fetch-salesforce-contacts", async (req, res) => {
 });
 
 // ➕ POST /add-record
-app.post("/add-record", (req, res) => {
+app.post("/add-record", async (req, res) => {
   const { tablename, FirstName, LastName, Email } = req.body;
   console.log("📩 Add record:", req.body);
   const table = getTable(tablename);
@@ -90,6 +129,10 @@ app.post("/add-record", (req, res) => {
   table.push(newRecord);
 
   console.log("✅ Record added:", newRecord);
+
+  let addSalesforceContactresp = await addSalesforceContact(req.body);
+ console.log("✅ addSalesforceContactresp:", addSalesforceContactresp);
+
   res.status(201).json({ message: `${tablename} record added successfully`, record: newRecord });
 });
 
