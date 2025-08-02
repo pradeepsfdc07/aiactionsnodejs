@@ -2,7 +2,6 @@
 const express = require("express");
 const path = require("path");
 const nodemailer = require("nodemailer");
-const axios = require("axios");
 const jsforce = require("jsforce");
 require("dotenv").config();
 
@@ -28,25 +27,11 @@ function getTable(tablename) {
   return tables[tablename];
 }
 
-// 🔐 Salesforce Auth
-async function getAccessToken() {
-  const params = new URLSearchParams({
-    grant_type: "password",
-    client_id: process.env.SF_CLIENT_ID,
-    client_secret: process.env.SF_CLIENT_SECRET,
-    username: process.env.SF_USERNAME,
-    password: process.env.SF_PASSWORD + process.env.SF_SECURITY_TOKEN
-  });
-
-  const response = await axios.post(`${process.env.SF_LOGIN_URL}/services/oauth2/token`, params);
-  return response.data;
-}
-
+// 🔐 Salesforce Contact Fetch (no client_id needed)
 async function getSalesforceContacts() {
   try {
-    const conn = new jsforce.Connection({
-      loginUrl: process.env.SF_LOGIN_URL
-    });
+    console.log("🔐 Logging into Salesforce...");
+    const conn = new jsforce.Connection({ loginUrl: process.env.SF_LOGIN_URL });
 
     await conn.login(
       process.env.SF_USERNAME,
@@ -61,28 +46,29 @@ async function getSalesforceContacts() {
       .limit(10)
       .execute();
 
-    console.log("📦 Contacts:", records);
+    console.log(`📦 Retrieved ${records.length} contact(s)`);
+    return records;
   } catch (err) {
-    console.error("❌ Error:", err);
+    console.error("❌ Salesforce Login or Query Failed:", err.message);
+    throw err;
   }
 }
 
-
-// 🆕 NEW: Fetch contacts from Salesforce
+// 🆕 GET /fetch-salesforce-contacts
 app.get("/fetch-salesforce-contacts", async (req, res) => {
   try {
+    console.log("📲 GET /fetch-salesforce-contacts called");
     const records = await getSalesforceContacts();
     res.json({ message: "Salesforce contacts retrieved", count: records.length, records });
   } catch (err) {
-    console.error("❌ Salesforce Fetch Error:", err?.response?.data || err.message);
     res.status(500).json({ error: "Failed to fetch contacts from Salesforce" });
   }
 });
 
-
-// ➕ Add record
+// ➕ POST /add-record
 app.post("/add-record", (req, res) => {
   const { tablename, FirstName, LastName, Email } = req.body;
+  console.log("📩 Add record:", req.body);
   const table = getTable(tablename);
   if (!table) return res.status(400).json({ error: `Invalid tablename: ${tablename}` });
   if (!FirstName || !LastName || !Email)
@@ -92,17 +78,19 @@ app.post("/add-record", (req, res) => {
   const newRecord = { Id: newId, FirstName, LastName, Email };
   table.push(newRecord);
 
+  console.log("✅ Record added:", newRecord);
   res.status(201).json({ message: `${tablename} record added successfully`, record: newRecord });
 });
 
+// 🔍 POST /get-records
 app.post("/get-records", async (req, res) => {
   const { tablename, filter } = req.body;
+  console.log(`📥 POST /get-records: tablename=${tablename}, filter=${filter}`);
 
   if (tablename === "contact") {
     try {
       const sfRecords = await getSalesforceContacts();
 
-      // Filter if `filter` is provided
       const filtered = filter
         ? sfRecords.filter(r =>
             (r.FirstName || "").toLowerCase().includes(filter.toLowerCase()) ||
@@ -111,17 +99,18 @@ app.post("/get-records", async (req, res) => {
           )
         : sfRecords;
 
+      console.log(`🎯 Filtered to ${filtered.length} Salesforce record(s)`);
       return res.json({
         count: filtered.length,
         records: filtered,
-        message: `Salesforce records retrieved`
+        message: `Salesforce contact records retrieved`
       });
     } catch (err) {
-      console.error("❌ Salesforce Fetch Error:", err?.response?.data || err.message);
       return res.status(500).json({ error: "Failed to fetch Salesforce records" });
     }
   }
-    // Else: Handle mock tables
+
+  // Mock table fallback
   const table = getTable(tablename);
   if (!table) return res.status(400).json({ error: `Invalid tablename: ${tablename}` });
   if (!filter || typeof filter !== "string")
@@ -134,12 +123,14 @@ app.post("/get-records", async (req, res) => {
     r.Email.toLowerCase().includes(lower)
   );
 
+  console.log(`📁 Found ${results.length} record(s) in mock table`);
   res.json({ count: results.length, records: results, message: `${tablename} records retrieved` });
 });
 
-// 🔁 Update record
+// 🔁 PUT /update-record
 app.put("/update-record", (req, res) => {
   const { tablename, Id, FirstName, LastName, Email } = req.body;
+  console.log("✏️ Update record:", req.body);
   const table = getTable(tablename);
   if (!table) return res.status(400).json({ error: `Invalid tablename: ${tablename}` });
 
@@ -150,12 +141,14 @@ app.put("/update-record", (req, res) => {
   if (LastName) record.LastName = LastName;
   if (Email) record.Email = Email;
 
+  console.log("✅ Record updated:", record);
   res.json({ message: `${tablename} record updated successfully`, record });
 });
 
-// ❌ Delete record
+// ❌ POST /delete-record
 app.post("/delete-record", (req, res) => {
   const { tablename, Id } = req.body;
+  console.log("🗑️ Delete request:", req.body);
   const table = getTable(tablename);
   if (!table) return res.status(400).json({ error: `Invalid tablename: ${tablename}` });
 
@@ -163,12 +156,14 @@ app.post("/delete-record", (req, res) => {
   if (index === -1) return res.status(404).json({ error: `${tablename} record not found.` });
 
   const removed = table.splice(index, 1);
+  console.log("🧹 Record deleted:", removed[0]);
   res.json({ message: `${tablename} record deleted successfully`, deleted: removed[0] });
 });
 
-// 📧 Send Email
+// 📧 POST /send-email
 app.post("/send-email", async (req, res) => {
   const { to, subject, text } = req.body;
+  console.log("📨 Send email:", req.body);
 
   if (!to || !subject || !text) {
     return res.status(400).json({ error: "to, subject, and text are required." });
@@ -194,10 +189,9 @@ app.post("/send-email", async (req, res) => {
 
     const info = await transporter.sendMail(mailOptions);
     console.log("📤 Email sent:", info.messageId);
-
     res.json({ message: "Email sent successfully", messageId: info.messageId });
   } catch (error) {
-    console.error("❌ Email error:", error);
+    console.error("❌ Email send failed:", error);
     res.status(500).json({ error: "Failed to send email" });
   }
 });
@@ -212,7 +206,7 @@ app.get("/openapi.yaml", (req, res) => {
   res.sendFile(path.join(__dirname, "openapi.yaml"));
 });
 
-// 🚀 Start
+// 🚀 Start server
 app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
 });
