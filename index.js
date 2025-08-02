@@ -103,7 +103,7 @@ async function addSalesforceContact(methodprops) {
 }
 
 async function updateSalesforceContact(methodprops) {
-  const { FirstName, LastName, Email, tablename = "contact" } = methodprops;
+  const { FirstName, LastName, Email, Id, tablename = "contact" } = methodprops;
 
   try {
     console.log("🔐 Logging into Salesforce...");
@@ -123,7 +123,8 @@ async function updateSalesforceContact(methodprops) {
       tablename,
       FirstName,
       LastName,
-      Email
+      Email,
+      Id
     };
 
     console.log("📤 Sending POST to Apex REST:", url);
@@ -141,7 +142,7 @@ async function updateSalesforceContact(methodprops) {
 
 
 async function deleteSalesforceContact(methodprops) {
-  const { FirstName, LastName, Email, tablename = "contact" } = methodprops;
+  const { FirstName, LastName, Email, Id, tablename = "contact" } = methodprops;
 
   try {
     console.log("🔐 Logging into Salesforce...");
@@ -161,7 +162,8 @@ async function deleteSalesforceContact(methodprops) {
       tablename,
       FirstName,
       LastName,
-      Email
+      Email,
+      Id
     };
 
     console.log("📤 Sending POST to Apex REST:", url);
