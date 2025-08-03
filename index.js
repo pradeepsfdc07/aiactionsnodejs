@@ -27,8 +27,8 @@ function getTable(tablename) {
   return tables[tablename];
 }
 
-// 🔐 Salesforce Contact Fetch (no client_id needed)
-async function getSalesforceContacts(methodprops) {
+// 🔐 Salesforce Record Fetch (no client_id needed)
+async function getSalesforceRecords(methodprops) {
   let {tablename, filter}= methodprops;
   try {
     console.log("🔐 Logging into Salesforce...");
@@ -41,7 +41,7 @@ async function getSalesforceContacts(methodprops) {
 
     console.log("✅ Logged into Salesforce");
 
-    const url = `/services/apexrest/MultiObjectAPI?tablename=contact&filter=${encodeURIComponent(filter)}`;
+    const url = `/services/apexrest/MultiObjectAPI?tablename=${tablename}&filter=${encodeURIComponent(filter)}`;
     console.log("🌐 Calling Apex REST:", url);
 
     const records = await conn.requestGet(url);
@@ -54,7 +54,7 @@ async function getSalesforceContacts(methodprops) {
   return recarr;
 }
     console.log(records);
-    console.log(`📦 Retrieved ${records.length} contact(s) from Apex REST`);
+    console.log(`📦 Retrieved ${records.length} ${tablename}(s) from Apex REST`);
 
     return records;
   } catch (err) {
@@ -65,8 +65,8 @@ async function getSalesforceContacts(methodprops) {
 
 
 
-async function addSalesforceContact(methodprops) {
-  const { FirstName, LastName, Email, tablename = "contact" } = methodprops;
+async function addSalesforceRecord(methodprops) {
+  const { FirstName, LastName, Email, tablename  } = methodprops;
 
   try {
     console.log("🔐 Logging into Salesforce...");
@@ -94,16 +94,16 @@ async function addSalesforceContact(methodprops) {
 
     const response = await conn.requestPost(url, body);
 
-    console.log("✅ Contact added. Response:", response);
+    console.log("✅ Record added. Response:", response);
     return response;
   } catch (err) {
-    console.error("❌ Failed to add contact:", err.message);
+    console.error("❌ Failed to add ${tablename}:", err.message);
     throw err;
   }
 }
 
-async function updateSalesforceContact(methodprops) {
-  const { FirstName, LastName, Email, Id, tablename = "contact" } = methodprops;
+async function updateSalesforceRecord(methodprops) {
+  const { FirstName, LastName, Email, Id, tablename  } = methodprops;
 
   try {
     console.log("🔐 Logging into Salesforce...");
@@ -132,17 +132,17 @@ async function updateSalesforceContact(methodprops) {
 
     const response = await conn.requestPost(url, body);
 
-    console.log("✅ Contact added. Response:", response);
+    console.log("✅ Record added. Response:", response);
     return response;
   } catch (err) {
-    console.error("❌ Failed to add contact:", err.message);
+    console.error("❌ Failed to add ${tablename}:", err.message);
     throw err;
   }
 }
 
 
-async function deleteSalesforceContact(methodprops) {
-  const { FirstName, LastName, Email, Id, tablename = "contact" } = methodprops;
+async function deleteSalesforceRecord(methodprops) {
+  const { FirstName, LastName, Email, Id, tablename  } = methodprops;
 
   try {
     console.log("🔐 Logging into Salesforce...");
@@ -171,10 +171,10 @@ async function deleteSalesforceContact(methodprops) {
 
     const response = await conn.requestPost(url, body);
 
-    console.log("✅ Contact added. Response:", response);
+    console.log("✅ Record added. Response:", response);
     return response;
   } catch (err) {
-    console.error("❌ Failed to add contact:", err.message);
+    console.error("❌ Failed to add ${tablename}:", err.message);
     throw err;
   }
 }
@@ -214,14 +214,14 @@ async function sendMailviaSalesforce(methodprops) {
 }
 
 
-// 🆕 GET /fetch-salesforce-contacts
-app.get("/fetch-salesforce-contacts", async (req, res) => {
+// 🆕 GET /fetch-salesforce-records
+app.get("/fetch-salesforce-records", async (req, res) => {
   try {
-    console.log("📲 GET /fetch-salesforce-contacts called");
-    const records = await getSalesforceContacts();
-    res.json({ message: "Salesforce contacts retrieved", count: records.length, records });
+    console.log("📲 GET /fetch-salesforce-records called");
+    const records = await getSalesforceRecords();
+    res.json({ message: "Salesforce records retrieved", count: records.length, records });
   } catch (err) {
-    res.status(500).json({ error: "Failed to fetch contacts from Salesforce" });
+    res.status(500).json({ error: "Failed to fetch records from Salesforce" });
   }
 });
 
@@ -240,8 +240,8 @@ app.post("/add-record", async (req, res) => {
 
   console.log("✅ Record added:", newRecord);
 
-  let addSalesforceContactresp = await addSalesforceContact(req.body);
- console.log("✅ addSalesforceContactresp:", addSalesforceContactresp);
+  let addSalesforceRecordresp = await addSalesforceRecord(req.body);
+ console.log("✅ addSalesforceRecordresp:", addSalesforceRecordresp);
 
   res.status(201).json({ message: `${tablename} record added successfully`, record: newRecord });
 });
@@ -253,7 +253,7 @@ app.post("/get-records", async (req, res) => {
 
    try {
     if(tablename !== undefined &&  tablename !== ''){
-      const sfRecords = await getSalesforceContacts({tablename:tablename, filter:filter});
+      const sfRecords = await getSalesforceRecords({tablename:tablename, filter:filter});
 
       console.log(`🎯 sfRecords to ${sfRecords.length} Salesforce record(s)`);
       return res.json({
@@ -285,8 +285,8 @@ app.put("/update-record", async (req, res) => {
   const table = getTable(tablename);
   if (!table) return res.status(400).json({ error: `Invalid tablename: ${tablename}` });
 
-   let updateSalesforceContactresp = await updateSalesforceContact(req.body);
- console.log("✅ updateSalesforceContactresp:", updateSalesforceContactresp);
+   let updateSalesforceRecordresp = await updateSalesforceRecord(req.body);
+ console.log("✅ updateSalesforceRecordresp:", updateSalesforceRecordresp);
 
 
     res.json({
@@ -303,8 +303,8 @@ app.post("/delete-record", async (req, res) => {
   const table = getTable(tablename);
   if (!table) return res.status(400).json({ error: `Invalid tablename: ${tablename}` });
 
-  let deleteSalesforceContactresp = await deleteSalesforceContact(req.body);
- console.log("✅ deleteSalesforceContactresp:", deleteSalesforceContactresp);
+  let deleteSalesforceRecordresp = await deleteSalesforceRecord(req.body);
+ console.log("✅ deleteSalesforceRecordresp:", deleteSalesforceRecordresp);
 
 
   res.json({ message: `${tablename} record deleted successfully` });
