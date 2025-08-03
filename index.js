@@ -179,6 +179,40 @@ async function deleteSalesforceContact(methodprops) {
   }
 }
 
+async function sendMailviaSalesforce(methodprops) {
+  const { from, to, subject, body, template, } = methodprops;
+
+  try {
+    console.log("🔐 Logging into Salesforce...");
+    const conn = new jsforce.Connection({ loginUrl: process.env.SF_LOGIN_URL });
+
+    await conn.login(
+      process.env.SF_USERNAME,
+      process.env.SF_PASSWORD + process.env.SF_TOKEN
+    );
+
+    console.log("✅ Logged into Salesforce");
+
+    const url = `/services/apexrest/MultiObjectAPI`;
+
+    const body = {
+      action: "sendemail",
+     from, to, subject, body, template,
+    };
+
+    console.log("📤 Sending POST to Apex REST:", url);
+    console.log("📦 Payload:", body);
+
+    const response = await conn.requestPost(url, body);
+
+    console.log("✅ sendemail. Response:", response);
+    return response;
+  } catch (err) {
+    console.error("❌ Failed to sendemail:", err.message);
+    throw err;
+  }
+}
+
 
 // 🆕 GET /fetch-salesforce-contacts
 app.get("/fetch-salesforce-contacts", async (req, res) => {
@@ -314,26 +348,11 @@ app.post("/send-email", async (req, res) => {
   }
 
   try {
-    const transporter = nodemailer.createTransport({
-      host: process.env.EMAIL_HOST,
-      port: Number(process.env.EMAIL_PORT),
-      secure: false,
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
-      }
-    });
+   
+    let sendMailviaSalesforceresp = await sendMailviaSalesforce(req.body);
+ console.log("✅ sendMailviaSalesforceresp:", sendMailviaSalesforceresp);
 
-    const mailOptions = {
-      from: process.env.EMAIL_USER,
-      to,
-      subject,
-      text
-    };
-
-    const info = await transporter.sendMail(mailOptions);
-    console.log("📤 Email sent:", info.messageId);
-    res.json({ message: "Email sent successfully", messageId: info.messageId });
+ res.json({ message: "Email sent successfully" });
   } catch (error) {
     console.error("❌ Email send failed:", error);
     res.status(500).json({ error: "Failed to send email" });
