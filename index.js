@@ -196,8 +196,8 @@ async function sendMailviaSalesforce(methodprops) {
     const url = `/services/apexrest/MultiObjectAPI`;
 
     const body = {
+      ...methodprops,
       action: "sendemail",
-     from, to, subject, body, template,
     };
 
     console.log("📤 Sending POST to Apex REST:", url);
