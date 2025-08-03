@@ -251,44 +251,31 @@ app.post("/get-records", async (req, res) => {
   const { tablename, filter } = req.body;
   console.log(`📥 POST /get-records: tablename=${tablename}, filter=${filter}`);
 
-  if (tablename === "contact") {
-    try {
+   try {
+    if(tablename !== undefined &&  tablename !== ''){
       const sfRecords = await getSalesforceContacts({tablename:tablename, filter:filter});
 
-      const filtered = filter
-        ? sfRecords.filter(r =>
-            (r.FirstName || "").toLowerCase().includes(filter.toLowerCase()) ||
-            (r.LastName || "").toLowerCase().includes(filter.toLowerCase()) ||
-            (r.Email || "").toLowerCase().includes(filter.toLowerCase())
-          )
-        : sfRecords;
-
-      console.log(`🎯 Filtered to ${filtered.length} Salesforce record(s)`);
+      console.log(`🎯 sfRecords to ${sfRecords.length} Salesforce record(s)`);
       return res.json({
-        count: filtered.length,
-        records: filtered,
-        message: `Salesforce contact records retrieved`
+        count: sfRecords.length,
+        records: sfRecords,
+        message: tablename+`records retrieved`
       });
+    }
+    else{
+   return res.json({
+        count: 0,
+        records: [],
+        message: 'tablename is blank'
+      });
+ 
+    }
     } catch (err) {
       return res.status(500).json({ error: "Failed to fetch Salesforce records" });
     }
-  }
+  
 
-  // Mock table fallback
-  const table = getTable(tablename);
-  if (!table) return res.status(400).json({ error: `Invalid tablename: ${tablename}` });
-  if (!filter || typeof filter !== "string")
-    return res.status(400).json({ error: "Filter is required and must be a string" });
-
-  const lower = filter.toLowerCase();
-  const results = table.filter(r =>
-    r.FirstName.toLowerCase().includes(lower) ||
-    r.LastName.toLowerCase().includes(lower) ||
-    r.Email.toLowerCase().includes(lower)
-  );
-
-  console.log(`📁 Found ${results.length} record(s) in mock table`);
-  res.json({ count: results.length, records: results, message: `${tablename} records retrieved` });
+  
 });
 
 // 🔁 PUT /update-record
